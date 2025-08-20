@@ -1,0 +1,111 @@
+/* Profile Management Page Styles */
+.profile-page-container {
+  @apply min-h-screen bg-background p-4;
+}
+
+.profile-page-content {
+  @apply max-w-4xl mx-auto;
+}
+
+.profile-page-header {
+  @apply mb-8;
+}
+
+.profile-back-button-container {
+  @apply flex items-center gap-4 mb-4;
+}
+
+.profile-back-button {
+  @apply flex items-center gap-2;
+}
+
+.profile-page-title {
+  @apply text-3xl font-bold text-gray-900 dark:text-gray-100;
+}
+
+.profile-page-description {
+  @apply text-gray-600 dark:text-gray-400 mt-2;
+}
+
+.profile-main-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+}
+
+.profile-card-header {
+  @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.profile-card-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.profile-card-description {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.profile-card-content {
+  @apply p-6;
+}
+
+/* Profile sections */
+.profile-section {
+  @apply mb-8;
+}
+
+.profile-section-title {
+  @apply text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100;
+}
+
+.profile-form {
+  @apply space-y-4;
+}
+
+.profile-form-grid {
+  @apply grid grid-cols-2 gap-4;
+}
+
+.profile-form-field {
+  @apply space-y-2;
+}
+
+/* Form styles moved to form-components.css - use .form-field-label, .form-input-base, .form-textarea-base, .form-error-message classes */
+
+.profile-form-actions {
+  @apply flex items-center gap-4 pt-4;
+}
+
+.profile-save-button {
+  @apply bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Checkbox and select styling */
+.profile-checkbox-container {
+  @apply flex items-center space-x-2;
+}
+
+/* Checkbox and select styles moved to form-components.css - use .form-checkbox-input, .form-checkbox-label, .form-select-base classes */
+
+/* Alert styling */
+.profile-alert {
+  @apply rounded-md p-4 mb-4;
+}
+
+.profile-alert.success {
+  @apply bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800;
+}
+
+.profile-alert.error {
+  @apply bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800;
+}
+
+.profile-alert-description {
+  @apply text-sm;
+}
+
+.profile-alert.success .profile-alert-description {
+  @apply text-green-700 dark:text-green-300;
+}
+
+.profile-alert.error .profile-alert-description {
+  @apply text-red-700 dark:text-red-300;
+}

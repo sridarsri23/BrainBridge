@@ -1,0 +1,86 @@
+/* Common Dashboard Layout Styles */
+.dashboard-container {
+  @apply min-h-screen bg-background;
+}
+
+.dashboard-main {
+  @apply pt-6 pb-8;
+}
+
+.dashboard-content {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.dashboard-header {
+  @apply mb-8;
+}
+
+.dashboard-greeting {
+  @apply text-3xl font-bold text-gray-900 dark:text-gray-100;
+}
+
+.dashboard-subtitle {
+  @apply mt-1 text-lg text-gray-600 dark:text-gray-400;
+}
+
+.dashboard-stats-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8;
+}
+
+.dashboard-content-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-8;
+}
+
+.dashboard-main-column {
+  @apply lg:col-span-2 space-y-6;
+}
+
+.dashboard-sidebar-column {
+  @apply space-y-6;
+}
+
+.dashboard-section-card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+}
+
+.dashboard-section-header {
+  @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.dashboard-section-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.dashboard-section-content {
+  @apply p-6;
+}
+
+/* Profile completion styles */
+.profile-completion-container {
+  @apply flex items-center justify-between;
+}
+
+.profile-completion-text {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.profile-completion-percentage {
+  @apply font-semibold text-blue-600 dark:text-blue-400;
+}
+
+/* Empty state styles */
+.dashboard-empty-state {
+  @apply text-center py-12;
+}
+
+.dashboard-empty-icon {
+  @apply mx-auto h-12 w-12 text-gray-400 dark:text-gray-500;
+}
+
+.dashboard-empty-title {
+  @apply mt-4 text-lg font-medium text-gray-900 dark:text-gray-100;
+}
+
+.dashboard-empty-description {
+  @apply mt-2 text-sm text-gray-600 dark:text-gray-400;
+}

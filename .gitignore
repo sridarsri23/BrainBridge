@@ -1,0 +1,62 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+# Build outputs
+dist/
+client/dist/
+dist/public/
+build/
+
+# TypeScript
+*.tsbuildinfo
+
+# Vite cache
+client/.vite/
+
+# Python
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors/IDE
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local project
+.local/
+
+# Public server dir (not used for source)
+server/public
+
+# Misc
+vite.config.ts.*
+*.tar.gz
+cookies.txt
+
+# Local tool configs
+.config/
