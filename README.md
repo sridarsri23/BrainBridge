@@ -11,4 +11,4 @@ It provides AI-driven task matching, and inclusion-focused analytics to empower 
 - **Inclusive Workforce Analytics** – Visualize inclusion metrics and progress over time.
 - **Secure Role-Based Access Control** – Fine-grained permissions for admins, recruiters, and candidates.
 - **Responsive UI** – Accessible, mobile-friendly design built with Tailwind CSS.
-- **Scalable Backend** – Modular and API-first architecture.
+- **Scalable Backend** – Modular and API-first architecture
