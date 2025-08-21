@@ -73,7 +73,7 @@ export default function AssessmentResults({
 
   const responseCount = Object.keys(responses).length;
 
-  return (
+    return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Assessment Completion Header */}
       <Card className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
@@ -158,15 +158,15 @@ export default function AssessmentResults({
               </CardTitle>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">
-                  Confidence: {(analysisResult.confidence_score * 100).toFixed(0)}%
+                  Confidence: {(analysisResult?.confidence_score ? (analysisResult.confidence_score * 100).toFixed(0) : "N/A")}%
                 </Badge>
-                <Badge variant="outline">GPT-4o Analysis</Badge>
+                <Badge variant="outline">GPT-5 Analysis</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                 <h3 className="font-semibold text-green-800 mb-2">Personal Summary</h3>
-                <p className="text-green-700">{analysisResult.summary}</p>
+                <p className="text-green-700">{analysisResult?.summary || "No summary available."}</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -179,12 +179,12 @@ export default function AssessmentResults({
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {analysisResult.cognitive_profile.primary_strengths.map((strength, idx) => (
+                      {analysisResult?.cognitive_profile?.primary_strengths?.map((strength, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
                           <span className="text-sm">{strength}</span>
                         </li>
-                      ))}
+                      )) || <p className="text-sm text-gray-500">No strengths found.</p>}
                     </ul>
                   </CardContent>
                 </Card>
@@ -198,12 +198,12 @@ export default function AssessmentResults({
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {analysisResult.cognitive_profile.processing_preferences.map((preference, idx) => (
+                      {analysisResult?.cognitive_profile?.processing_preferences?.map((preference, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
                           <span className="text-sm">{preference}</span>
                         </li>
-                      ))}
+                      )) || <p className="text-sm text-gray-500">No preferences found.</p>}
                     </ul>
                   </CardContent>
                 </Card>
@@ -217,22 +217,22 @@ export default function AssessmentResults({
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Workplace Accommodations:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysisResult.recommendations.workplace_accommodations.map((accommodation, idx) => (
+                      {analysisResult?.recommendations?.workplace_accommodations?.map((accommodation, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {accommodation}
                         </Badge>
-                      ))}
+                      )) || <p className="text-sm text-gray-500">No accommodations available.</p>}
                     </div>
                   </div>
 
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Career Suggestions:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysisResult.recommendations.career_suggestions.map((suggestion, idx) => (
+                      {analysisResult?.recommendations?.career_suggestions?.map((suggestion, idx) => (
                         <Badge key={idx} variant="secondary" className="text-xs">
                           {suggestion}
                         </Badge>
-                      ))}
+                      )) || <p className="text-sm text-gray-500">No suggestions available.</p>}
                     </div>
                   </div>
                 </CardContent>
@@ -245,11 +245,11 @@ export default function AssessmentResults({
                 <CardContent className="space-y-3">
                   <div>
                     <h4 className="font-semibold text-purple-800">Pattern Analysis:</h4>
-                    <p className="text-sm text-purple-700">{analysisResult.insights.pattern_analysis}</p>
+                    <p className="text-sm text-purple-700">{analysisResult?.insights?.pattern_analysis || "No analysis available."}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-purple-800">Unique Qualities:</h4>
-                    <p className="text-sm text-purple-700">{analysisResult.insights.unique_qualities}</p>
+                    <p className="text-sm text-purple-700">{analysisResult?.insights?.unique_qualities || "No unique qualities found."}</p>
                   </div>
                 </CardContent>
               </Card>

@@ -81,7 +81,8 @@ async def submit_assessment_response(
     db: Session = Depends(get_db)
 ):
     """Submit responses to an assessment (ND Adults only)"""
-    if current_user.user_role != "ND_ADULT":
+    print(f"Submitting assessment response for user {current_user.user_role} to assessment {assessment_id}")
+    if str(current_user.user_role) != "ND_ADULT":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Self-discovery assessments are only available for ND professionals"
@@ -96,11 +97,12 @@ async def submit_assessment_response(
         )
     
     # Create response record
+    data = response_data.model_dump(exclude={"assessment_id"})
     new_response = AssessmentResponse(
-        assessment_id=assessment_id,
-        user_id=current_user.id,
-        **response_data.model_dump()
-    )
+    assessment_id=assessment_id,
+    user_id=current_user.id,
+    **data
+)
     
     db.add(new_response)
     db.commit()

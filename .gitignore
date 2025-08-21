@@ -36,6 +36,7 @@ __pycache__/
 .coverage
 .coverage.*
 .cache/
+server/__pycache__*/
 
 # OS
 .DS_Store

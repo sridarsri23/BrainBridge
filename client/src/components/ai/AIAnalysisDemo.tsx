@@ -79,7 +79,7 @@ export default function AIAnalysisDemo() {
                 🤖 AI-Powered Assessment Analysis
               </CardTitle>
               <CardDescription className="text-blue-700">
-                Experience GPT-4o intelligent analysis of neurodivergent cognitive profiles
+                Experience GPT-5 intelligent analysis of neurodivergent cognitive profiles
               </CardDescription>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function AIAnalysisDemo() {
               {analyzeAssessmentMutation.isPending ? (
                 <>
                   <Sparkles className="h-4 w-4 mr-2 animate-spin" />
-                  Analyzing with GPT-4o...
+                  Analyzing with GPT-5...
                 </>
               ) : (
                 <>
@@ -128,14 +128,14 @@ export default function AIAnalysisDemo() {
                 AI Analysis Results
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary">Confidence: {(analysisResult.confidence_score * 100).toFixed(0)}%</Badge>
-                <Badge variant="outline">GPT-4o Analysis</Badge>
+                <Badge variant="secondary">Confidence: {(analysisResult?.confidence_score ? (analysisResult.confidence_score * 100).toFixed(0) : "N/A")}%</Badge>
+                <Badge variant="outline">GPT-5 Analysis</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                 <h3 className="font-semibold text-green-800 mb-2">Summary</h3>
-                <p className="text-green-700">{analysisResult.summary}</p>
+                <p className="text-green-700">{analysisResult?.summary}</p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -148,7 +148,7 @@ export default function AIAnalysisDemo() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {analysisResult.cognitive_profile.primary_strengths.map((strength, idx) => (
+                      {analysisResult?.cognitive_profile?.primary_strengths?.map((strength, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
                           <span className="text-sm">{strength}</span>
@@ -167,7 +167,7 @@ export default function AIAnalysisDemo() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {analysisResult.cognitive_profile.processing_preferences.map((preference, idx) => (
+                      {analysisResult?.cognitive_profile?.processing_preferences?.map((preference, idx) => (
                         <li key={idx} className="flex items-start gap-2">
                           <div className="w-2 h-2 bg-amber-500 rounded-full mt-2"></div>
                           <span className="text-sm">{preference}</span>
@@ -186,7 +186,7 @@ export default function AIAnalysisDemo() {
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Workplace Accommodations:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysisResult.recommendations.workplace_accommodations.map((accommodation, idx) => (
+                      {analysisResult?.recommendations?.workplace_accommodations?.map((accommodation, idx) => (
                         <Badge key={idx} variant="outline" className="text-xs">
                           {accommodation}
                         </Badge>
@@ -197,7 +197,7 @@ export default function AIAnalysisDemo() {
                   <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Career Suggestions:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analysisResult.recommendations.career_suggestions.map((suggestion, idx) => (
+                      {analysisResult?.recommendations?.career_suggestions?.map((suggestion, idx) => (
                         <Badge key={idx} variant="secondary" className="text-xs">
                           {suggestion}
                         </Badge>
@@ -214,11 +214,11 @@ export default function AIAnalysisDemo() {
                 <CardContent className="space-y-3">
                   <div>
                     <h4 className="font-semibold text-purple-800">Pattern Analysis:</h4>
-                    <p className="text-sm text-purple-700">{analysisResult.insights.pattern_analysis}</p>
+                    <p className="text-sm text-purple-700">{analysisResult?.insights?.pattern_analysis || "No analysis available."}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-purple-800">Unique Qualities:</h4>
-                    <p className="text-sm text-purple-700">{analysisResult.insights.unique_qualities}</p>
+                    <p className="text-sm text-purple-700">{analysisResult?.insights?.unique_qualities || "No unique qualities found."}</p>
                   </div>
                 </CardContent>
               </Card>

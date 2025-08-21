@@ -40,6 +40,7 @@ export default function SelfDiscovery() {
   const [completedQuizzes, setCompletedQuizzes] = useState<Set<string>>(new Set());
   const [showResults, setShowResults] = useState<{ assessmentId: string; responses: Record<string, string> } | null>(null);
   const queryClient = useQueryClient();
+  const { token } = useAuth();
 
   // Mock assessment data for now - in production this would come from the API
   const mockQuizzes: Quiz[] = [
@@ -103,29 +104,31 @@ export default function SelfDiscovery() {
 
   // Submit assessment response mutation
   const submitResponseMutation = useMutation({
-    mutationFn: async (data: { quizId: string; responses: Record<string, string> }) => {
-      const response = await fetch(`/api/assessment/assessments/${data.quizId}/respond`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          responses: data.responses,
-          completion_time: new Date().toISOString()
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Assessment submission failed: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    onSuccess: (_, variables) => {
-      setCompletedQuizzes(prev => new Set([...prev, variables.quizId]));
-      queryClient.invalidateQueries({ queryKey: ['/api/assessment/quiz-templates'] });
+  mutationFn: async (data: { quizId: string; responses: Record<string, string> }) => {
+    const response = await fetch(`/api/assessment/assessments/${data.quizId}/respond`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,  // ✅ now this will be correct
+      },
+      body: JSON.stringify({
+        assessment_id: data.quizId,   // required by model
+        responses: data.responses,
+        completion_time_seconds: 120  // optional
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Assessment submission failed: ${response.status}`);
     }
-  });
+
+    return response.json();
+  },
+  onSuccess: (_, variables) => {
+    setCompletedQuizzes(prev => new Set([...prev, variables.quizId]));
+    queryClient.invalidateQueries({ queryKey: ['/api/assessment/quiz-templates'] });
+  }
+});
 
   // Temporarily bypass user role check for testing
   // if (!user || user.user_role !== 'ND_ADULT') {

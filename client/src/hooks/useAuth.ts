@@ -21,6 +21,8 @@ export function useAuth() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
   const { data: user, isLoading, error } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
@@ -266,6 +268,7 @@ export function useAuth() {
 
   return {
     user: user || undefined,
+    token,   // 👈 expose token here
     isLoading,
     isAuthenticated,
     error,

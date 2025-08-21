@@ -4,44 +4,38 @@ OpenAI Integration for BrainBridge Assessment Analysis
 Enhanced AI-powered assessment analysis and personalized recommendations
 """
 
-from openai import AsyncOpenAI
+from openai import OpenAI
 import os
 import json
-from typing import Dict, List, Any, Optional
+from typing import Dict, Any, Optional
 from datetime import datetime
 
-# Initialize OpenAI client with modern v1.0+ API
-client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Initialize AIML client
+client = OpenAI(
+    base_url="https://api.aimlapi.com/v1",
+    api_key=os.getenv("AIML_API_KEY"),   # ✅ just the key
+)
 
 class AssessmentAnalyzer:
-    """AI-powered assessment analyzer using GPT-4o for cognitive profile analysis"""
+    """AI-powered assessment analyzer using AIML GPT models for cognitive profile analysis"""
     
     def __init__(self):
-        self.model = "gpt-4o"  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        self.model = "openai/gpt-5-chat-latest"  # ✅ AIML’s latest GPT model
         
-    async def analyze_assessment_responses(
+    def analyze_assessment_responses(
         self, 
         responses: Dict[str, str], 
         assessment_type: str,
         user_context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """
-        Analyze assessment responses and generate insights using GPT-4o
-        
-        Args:
-            responses: Dictionary of question_id -> selected_answer
-            assessment_type: Type of assessment (e.g., 'focus_attention_assessment')
-            user_context: Optional user context for personalization
-            
-        Returns:
-            Comprehensive analysis with strengths, insights, and recommendations
+        Analyze assessment responses and generate insights
         """
         
-        # Prepare the prompt for GPT-4o analysis
         analysis_prompt = self._create_analysis_prompt(responses, assessment_type, user_context)
         
         try:
-            response = await client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
@@ -56,12 +50,17 @@ class AssessmentAnalyzer:
                         "content": analysis_prompt
                     }
                 ],
-                response_format={"type": "json_object"},
                 temperature=0.7,
-                max_tokens=2000
+                top_p=0.7,
+                frequency_penalty=1,
+                max_tokens=2000,
+                response_format={"type": "json_object"},
             )
             
-            analysis_result = json.loads(response.choices[0].message.content)
+            print("RAW MODEL OUTPUT:", response.choices[0].message)
+
+            analysis_result = response.choices[0].message.content  # ✅ use .content
+            analysis_result = json.loads(analysis_result)
             
             # Add metadata
             analysis_result["analysis_timestamp"] = datetime.utcnow().isoformat()
@@ -71,7 +70,7 @@ class AssessmentAnalyzer:
             return analysis_result
             
         except Exception as e:
-            print(f"OpenAI analysis error: {str(e)}")
+            print(f"AIML analysis error: {str(e)}")
             return self._fallback_analysis(responses, assessment_type)
     
     def _create_analysis_prompt(
@@ -80,7 +79,7 @@ class AssessmentAnalyzer:
         assessment_type: str,
         user_context: Optional[Dict] = None
     ) -> str:
-        """Create a detailed prompt for GPT-4o analysis"""
+        """Create a detailed prompt for GPT analysis"""
         
         prompt = f"""
         Please analyze the following {assessment_type.replace('_', ' ')} assessment responses for a neurodivergent professional.
@@ -111,19 +110,12 @@ class AssessmentAnalyzer:
             "confidence_score": 0.85,
             "summary": "A personalized 2-3 sentence summary of their cognitive profile"
         }}
-        
-        Guidelines:
-        - Focus on strengths and positive framing
-        - Avoid clinical language or diagnostic terms
-        - Emphasize workplace applications and career fit
-        - Be specific and actionable
-        - Consider neurodiversity as cognitive variation, not deficit
         """
         
         return prompt
     
     def _fallback_analysis(self, responses: Dict[str, str], assessment_type: str) -> Dict[str, Any]:
-        """Fallback analysis if OpenAI is unavailable"""
+        """Fallback analysis if AIML API is unavailable"""
         return {
             "cognitive_profile": {
                 "primary_strengths": ["Detailed analysis pending", "System processing responses"],

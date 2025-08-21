@@ -154,7 +154,7 @@ Return as valid JSON only.""")
         # Initialize instance variables
         self.llm = None
         self.llm_with_json = None
-        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.api_key = os.getenv("AIML_API_KEY")
         self.llm_available = False
         self.assessment_chain = None
         self.quiz_generation_chain = None
@@ -173,7 +173,7 @@ Return as valid JSON only.""")
     def _init_llm(self):
         """Initialize the language model with proper error handling"""
         if not self.api_key or self.api_key == "your-openai-api-key-here":
-            logger.warning("OPENAI_API_KEY not set or using default value - AI features will be limited")
+            logger.warning("AIML_API_KEY not set or using default value - AI features will be limited")
             self.llm_available = False
             return False
             
@@ -379,7 +379,7 @@ Return as valid JSON only.""")
                     "environmental": "Not available"
                 },
                 "recommendations": [
-                    "Please set a valid OPENAI_API_KEY in your .env file",
+                    "Please set a valid AIML_API_KEY in your .env file",
                     "Using limited demo functionality"
                 ]
             },
@@ -387,7 +387,7 @@ Return as valid JSON only.""")
                 "key_observations": ["Full analysis requires API key"],
                 "strength_areas": ["Not available without API key"],
                 "potential_challenges": ["Not available without API key"],
-                "recommendations": ["Set OPENAI_API_KEY in .env for full functionality"]
+                "recommendations": ["Set AIML_API_KEY in .env for full functionality"]
             }
         }
 

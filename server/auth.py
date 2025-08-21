@@ -62,6 +62,7 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 def get_current_user(token_data: TokenData = Depends(verify_token), db: Session = Depends(get_db)):
     """Get current user from token"""
     user = db.query(User).filter(User.email == token_data.email).first()
+    print(f"Current user: {user.user_role if user else 'None'}")
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

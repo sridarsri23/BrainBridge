@@ -80,6 +80,7 @@ async def submit_assessment_response(
     db: Session = Depends(get_db)
 ):
     """Submit responses to an assessment (ND Adults only)"""
+    print(f"Submitting assessment response for user {current_user.user_role} to assessment {assessment_id}")
     if current_user.user_role != "ND_ADULT":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

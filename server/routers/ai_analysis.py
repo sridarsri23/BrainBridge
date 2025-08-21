@@ -43,7 +43,7 @@ async def demo_analyze_assessment(
         })
         
         # Get AI analysis using GPT-4o
-        ai_analysis = await assessment_analyzer.analyze_assessment_responses(
+        ai_analysis = assessment_analyzer.analyze_assessment_responses(
             responses=response_data,
             assessment_type=assessment_id,
             user_context=user_context
