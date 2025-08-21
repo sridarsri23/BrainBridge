@@ -1,0 +1,131 @@
+/* Common Utility Classes */
+
+/* Layout Utilities */
+.page-container {
+  @apply min-h-screen bg-background;
+}
+
+.content-wrapper {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.section-spacing {
+  @apply mb-8;
+}
+
+/* Global Card Hover Effect */
+.card-hover {
+  @apply hover:shadow-md transition-shadow duration-200;
+}
+
+/* Typography - Use Tailwind classes directly or shadcn/ui components instead */
+.heading-primary {
+  @apply text-3xl font-bold text-foreground;
+}
+
+.heading-secondary {
+  @apply text-2xl font-semibold text-foreground;
+}
+
+.heading-tertiary {
+  @apply text-lg font-semibold text-foreground;
+}
+
+/* These are deprecated - use text-foreground, text-muted-foreground classes instead */
+.text-body {
+  @apply text-foreground;
+}
+
+.text-muted {
+  @apply text-muted-foreground;
+}
+
+.text-subtle {
+  @apply text-muted-foreground;
+}
+
+/* Moved form styles to form-components.css to eliminate duplication */
+
+/* Use shadcn/ui Button component instead of custom button classes */
+
+/* Status Indicators */
+.status-success {
+  @apply bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300;
+}
+
+.status-warning {
+  @apply bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-700 dark:text-yellow-300;
+}
+
+.status-error {
+  @apply bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300;
+}
+
+.status-info {
+  @apply bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300;
+}
+
+/* Loading States */
+.loading-spinner {
+  @apply animate-spin h-5 w-5 text-blue-600 dark:text-blue-400;
+}
+
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+}
+
+/* Responsive Grid Utilities */
+.grid-responsive-1 {
+  @apply grid grid-cols-1 gap-6;
+}
+
+.grid-responsive-2 {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.grid-responsive-3 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.grid-responsive-4 {
+  @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6;
+}
+
+/* Dashboard specific grids - for backward compatibility */
+.dashboard-stats-grid {
+  @apply grid-responsive-4;
+}
+
+.dashboard-content-grid {
+  @apply grid grid-cols-1 lg:grid-cols-3 gap-8;
+}
+
+/* Spacing Utilities */
+.space-y-4 > * + * {
+  @apply mt-4;
+}
+
+.space-y-6 > * + * {
+  @apply mt-6;
+}
+
+.space-y-8 > * + * {
+  @apply mt-8;
+}
+
+/* Responsive Utilities */
+.show-mobile {
+  @apply block md:hidden;
+}
+
+.show-desktop {
+  @apply hidden md:block;
+}
+
+.hide-mobile {
+  @apply hidden md:block;
+}
+
+.hide-desktop {
+  @apply block md:hidden;
+}

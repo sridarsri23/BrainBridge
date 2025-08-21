@@ -1,0 +1,68 @@
+/* Verification Queue Component Styles */
+.verification-queue-container {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700;
+}
+
+.verification-queue-header {
+  @apply px-6 py-4 border-b border-gray-200 dark:border-gray-700;
+}
+
+.verification-queue-title {
+  @apply text-lg font-semibold text-gray-900 dark:text-gray-100;
+}
+
+.verification-queue-subtitle {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.verification-queue-content {
+  @apply p-6;
+}
+
+.verification-item {
+  @apply flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg mb-3;
+}
+
+.verification-item-info {
+  @apply flex-1;
+}
+
+.verification-item-name {
+  @apply font-medium text-gray-900 dark:text-gray-100;
+}
+
+.verification-item-email {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
+
+.verification-item-role {
+  @apply text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full inline-block mt-1;
+}
+
+.verification-item-actions {
+  @apply flex gap-2;
+}
+
+.verification-approve-button {
+  @apply bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center gap-2;
+}
+
+.verification-reject-button {
+  @apply bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-200 flex items-center gap-2;
+}
+
+.verification-empty-state {
+  @apply text-center py-12;
+}
+
+.verification-empty-icon {
+  @apply mx-auto h-12 w-12 text-gray-400 dark:text-gray-500 mb-4;
+}
+
+.verification-empty-title {
+  @apply text-lg font-medium text-gray-900 dark:text-gray-100;
+}
+
+.verification-empty-description {
+  @apply text-sm text-gray-600 dark:text-gray-400;
+}
