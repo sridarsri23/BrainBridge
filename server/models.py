@@ -4,13 +4,11 @@ SQLAlchemy models for BrainBridge platform
 
 from sqlalchemy import Column, String, Text, Boolean, DateTime, Date, Integer, Float, ForeignKey, Enum, JSON
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from .database import Base
 import uuid
 import enum
-
-Base = declarative_base()
 
 # Enums
 class UserRole(enum.Enum):

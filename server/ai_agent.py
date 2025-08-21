@@ -38,15 +38,8 @@ class GeneratedQuiz(BaseModel):
 class SelfDiscoveryAgent:
     """AI Agent for analyzing ND cognitive profiles using LangChain and GPT"""
     
-    def __init__(self):
-        self.llm = ChatOpenAI(
-            model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-            temperature=0.3,
-            base_url="https://api.aimlapi.com/v1",
-            api_key=os.getenv("OPENAI_API_KEY")  # Using AIML API key
-        )
-        
-        # Define the CDC categories we assess
+    def _init_cdcs(self):
+        """Initialize CDC categories and related configurations"""
         self.core_cdcs = [
             "focus_sustained_attention",
             "pattern_recognition", 
@@ -64,6 +57,144 @@ class SelfDiscoveryAgent:
             "communication_interpretation",
             "attention_filtering"
         ]
+    
+    def _init_prompts(self):
+        """Initialize prompt templates and output parsers"""
+        # Quiz generation prompt
+        self.quiz_generation_prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are a creative assessment designer specializing in neurodiversity-friendly evaluations. Your task is to create engaging quizzes, games, scenarios, and interactive challenges that naturally assess Cognitive Demand Categories (CDCs) WITHOUT directly asking assessment questions.
+
+CREATE ACTIVITIES THAT:
+- Feel like fun quizzes, games, or interesting scenarios rather than clinical assessments
+- Naturally reveal cognitive preferences through choices and responses
+- Use creative scenarios, hypothetical situations, or preference-based questions
+- Avoid obvious assessment language like "How well do you..." or "Rate your ability..."
+- Include varied formats: scenarios, preferences, problem-solving, creative challenges"""),
+            ("user", "Create an engaging {activity_type} that assesses cognitive strengths for neurodivergent professionals. Focus on {target_cdcs} categories. Make it feel like a fun, interesting activity rather than a clinical assessment. Title: {title_theme}\n\nIMPORTANT: Return ONLY valid JSON in the exact format specified, no markdown or extra text.")
+        ])
+        
+        # Assessment prompt
+        self.assessment_prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are an expert neurodiversity assessment specialist. Analyze the provided data to create a comprehensive cognitive profile for a neurodivergent professional.
+
+Your task is to assess Cognitive Demand Categories (CDCs) based on:
+1. Quiz responses and self-assessment data
+2. Behavioral observations (if available) 
+3. Past work/academic history (if available)
+
+Rate each CDC strength from 0.0 (significant challenge) to 1.0 (exceptional strength):"""),
+            ("user", """Please analyze this neurodivergent professional's data:
+
+QUIZ RESULTS: {quiz_results}
+
+BEHAVIORAL DATA: {behavior_data}
+
+PAST WORK/ACADEMIC DATA: {past_data}
+
+Create a comprehensive cognitive profile with:
+1. Strength ratings for all CDCs (0.0-1.0)
+2. Sensitivities (noise, lighting, crowding, etc.)
+3. Work preferences (remote, routine, independence, etc.)
+4. Confidence levels for each assessment
+5. Summary analysis explaining the profile
+6. Actionable recommendations for career development
+
+Return as valid JSON only.""")
+        ])
+        
+        # Initialize output parsers
+        self.assessment_output_parser = JsonOutputParser(pydantic_object=CognitiveAssessmentResult)
+        self.quiz_output_parser = JsonOutputParser(pydantic_object=GeneratedQuiz)
+        
+        # Initialize chains (will be set up in _init_chains if LLM is available)
+        self.assessment_chain = None
+        self.quiz_generation_chain = None
+    
+    def _init_chains(self):
+        """Initialize LangChain chains only if LLM is available"""
+        if not self.llm_available or not self.llm:
+            logger.warning("Skipping chain initialization - LLM not available")
+            self.assessment_chain = None
+            self.quiz_generation_chain = None
+            return
+            
+        try:
+            # Initialize LLM with JSON response format
+            self.llm_with_json = self.llm.bind(response_format={"type": "json_object"})
+            
+            # Initialize assessment chain
+            if self.assessment_prompt and self.llm and self.assessment_output_parser:
+                self.assessment_chain = (
+                    self.assessment_prompt 
+                    | self.llm 
+                    | self.assessment_output_parser
+                )
+            
+            # Initialize quiz generation chain
+            if self.quiz_generation_prompt and self.llm_with_json and self.quiz_output_parser:
+                self.quiz_generation_chain = (
+                    self.quiz_generation_prompt 
+                    | self.llm_with_json 
+                    | self.quiz_output_parser
+                )
+            
+            if self.assessment_chain or self.quiz_generation_chain:
+                logger.info("Successfully initialized LangChain chains")
+            else:
+                logger.warning("Failed to initialize any chains - missing required components")
+                self.llm_available = False
+                
+        except Exception as e:
+            logger.error(f"Failed to initialize LangChain chains: {str(e)}", exc_info=True)
+            self.llm_available = False
+            self.assessment_chain = None
+            self.quiz_generation_chain = None
+    
+    def __init__(self):
+        # Initialize instance variables
+        self.llm = None
+        self.llm_with_json = None
+        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.llm_available = False
+        self.assessment_chain = None
+        self.quiz_generation_chain = None
+        
+        # Initialize core components
+        self._init_cdcs()
+        self._init_prompts()
+        
+        # Try to initialize LLM if API key is available
+        self._init_llm()
+        
+        # Initialize chains after LLM is set up
+        if hasattr(self, '_init_chains'):
+            self._init_chains()
+        
+    def _init_llm(self):
+        """Initialize the language model with proper error handling"""
+        if not self.api_key or self.api_key == "your-openai-api-key-here":
+            logger.warning("OPENAI_API_KEY not set or using default value - AI features will be limited")
+            self.llm_available = False
+            return False
+            
+        try:
+            self.llm = ChatOpenAI(
+                model="gpt-4o",
+                temperature=0.3,
+                base_url="https://api.aimlapi.com/v1",
+                api_key=self.api_key,
+                max_retries=3,
+                request_timeout=30
+            )
+            self.llm_available = True
+            logger.info("Successfully initialized OpenAI client")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAI client: {str(e)}", exc_info=True)
+            print("Error: Failed to initialize AI features. Falling back to limited functionality mode.")
+            self.llm_available = False
+            return False
         
         # Set up quiz generation prompt
         self.quiz_generation_prompt = ChatPromptTemplate.from_messages([
@@ -154,18 +285,9 @@ Return as valid JSON only.""")
         self.assessment_output_parser = JsonOutputParser(pydantic_object=CognitiveAssessmentResult)
         self.quiz_output_parser = JsonOutputParser(pydantic_object=GeneratedQuiz)
         
-        # Create the chains
-        self.assessment_chain = self.assessment_prompt | self.llm | self.assessment_output_parser
-        # Create quiz generation chain with response format
-        self.llm_with_json = ChatOpenAI(
-            model="gpt-4o",  # the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-            temperature=0.3,
-            base_url="https://api.aimlapi.com/v1",
-            api_key=os.getenv("OPENAI_API_KEY")  # Using AIML API key
-        ).bind(response_format={"type": "json_object"})
+        # Initialize LangChain chains only if LLM is available
+        self._init_chains()
         
-        self.quiz_generation_chain = self.quiz_generation_prompt | self.llm_with_json | self.quiz_output_parser
-
     async def analyze_cognitive_profile(
         self,
         user_id: str,
@@ -226,41 +348,48 @@ Return as valid JSON only.""")
             logger.error(f"Error analyzing cognitive profile for user {user_id}: {str(e)}")
             raise Exception(f"Failed to analyze cognitive profile: {str(e)}")
 
-    def _generate_embedding(self, strengths: Dict[str, float]) -> str:
-        """Generate a vector embedding from strength scores for similarity matching"""
+    async def analyze_responses(self, responses: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze assessment responses using LangChain with fallback if LLM not available"""
+        if not self.llm_available:
+            return self._get_fallback_analysis(responses)
+            
         try:
-            # Create a standardized vector from CDC strengths
-            all_cdcs = self.core_cdcs + self.additional_cdcs
-            vector = []
+            # Create prompt from responses
+            prompt = self._create_analysis_prompt(responses)
             
-            for cdc in all_cdcs:
-                vector.append(strengths.get(cdc, 0.5))  # Default to neutral if missing
+            # Get analysis from LLM
+            analysis = await self.llm.ainvoke(prompt)
             
-            # Normalize the vector
-            vector = np.array(vector)
-            vector = vector / np.linalg.norm(vector)
-            
-            # Convert to string representation for storage
-            return json.dumps(vector.tolist())
+            # Parse and return results
+            return self._parse_analysis(analysis.content)
             
         except Exception as e:
-            logger.error(f"Error generating embedding: {str(e)}")
-            return json.dumps([0.5] * len(self.core_cdcs + self.additional_cdcs))
-
-    async def find_similar_profiles(
-        self,
-        target_embedding: str,
-        threshold: float = 0.8
-    ) -> List[str]:
-        """Find users with similar cognitive profiles using vector similarity"""
-        try:
-            # This would integrate with pgvector for actual similarity search
-            # For now, return placeholder
-            return []
+            logger.error(f"Error in analyze_responses: {str(e)}")
+            logger.info("Falling back to limited analysis")
+            return self._get_fallback_analysis(responses)
             
-        except Exception as e:
-            logger.error(f"Error finding similar profiles: {str(e)}")
-            return []
+    def _get_fallback_analysis(self, responses: Dict[str, Any]) -> Dict[str, Any]:
+        """Return basic analysis when LLM is not available"""
+        return {
+            "cognitive_profile": {
+                "primary_strengths": ["Analysis requires valid API key"],
+                "processing_preferences": "Analysis requires valid API key",
+                "sensitivities": {
+                    "sensory": "Not available",
+                    "environmental": "Not available"
+                },
+                "recommendations": [
+                    "Please set a valid OPENAI_API_KEY in your .env file",
+                    "Using limited demo functionality"
+                ]
+            },
+            "assessment_insights": {
+                "key_observations": ["Full analysis requires API key"],
+                "strength_areas": ["Not available without API key"],
+                "potential_challenges": ["Not available without API key"],
+                "recommendations": ["Set OPENAI_API_KEY in .env for full functionality"]
+            }
+        }
 
     async def generate_engaging_quiz(
         self,
@@ -279,6 +408,9 @@ Return as valid JSON only.""")
         Returns:
             Engaging quiz/game that indirectly assesses CDC categories
         """
+        if not self.llm_available:
+            return self._get_fallback_quiz()
+            
         try:
             if target_cdcs is None:
                 target_cdcs = self.core_cdcs + self.additional_cdcs
