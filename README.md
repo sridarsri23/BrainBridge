@@ -91,6 +91,16 @@ BrainBridge/
 
 ## Local setup
 
+### Run via a script
+
+```bash
+npm run setup
+```
+
+Note: For this to work you need to have docker desktop installed and up and running in the background.
+
+### OR
+
 ### 1) Prerequisites
 - Node.js 20+
 - Python 3.11+
