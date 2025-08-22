@@ -73,6 +73,48 @@ async def get_available_assessments(
         for a in assessments
     ]
 
+@router.get("/assessments/my-responses", response_model=List[dict])
+async def get_my_assessment_responses(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Return the latest response per assessment for the current ND Adult user"""
+    if current_user.user_role != "ND_ADULT":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Self-discovery assessments are only available for ND professionals"
+        )
+
+    # For each assessment_id the user has responded to, return the latest response
+    subq = (
+        db.query(
+            AssessmentResponse.assessment_id,
+        )
+        .filter(AssessmentResponse.user_id == current_user.id)
+        .distinct(AssessmentResponse.assessment_id)
+        .subquery()
+    )
+
+    # Fetch latest by completed_at (if available) or response_id DESC as fallback
+    latest_map: Dict[str, Dict[str, Any]] = {}
+    responses = (
+        db.query(AssessmentResponse)
+        .filter(AssessmentResponse.user_id == current_user.id)
+        .order_by(AssessmentResponse.completed_at.desc().nullslast(), AssessmentResponse.response_id.desc())
+        .all()
+    )
+    for r in responses:
+        aid = str(r.assessment_id)
+        if aid not in latest_map:
+            latest_map[aid] = {
+                "assessment_id": aid,
+                "responses": r.responses or {},
+                "completion_time_seconds": getattr(r, "completion_time_seconds", None),
+                "completed_at": r.completed_at
+            }
+
+    return list(latest_map.values())
+
 @router.post("/assessments/{assessment_id}/respond")
 async def submit_assessment_response(
     assessment_id: str,
@@ -120,13 +162,34 @@ async def submit_assessment_response(
                 detail="Assessment not found"
             )
     
-    # Create response record
+    # UPSERT: if latest response exists for this user+assessment, update it; else create new
     data = response_data.model_dump(exclude={"assessment_id"})
+
+    existing_latest = (
+        db.query(AssessmentResponse)
+        .filter(
+            AssessmentResponse.assessment_id == assessment_id,
+            AssessmentResponse.user_id == current_user.id,
+        )
+        .order_by(AssessmentResponse.completed_at.desc().nullslast(), AssessmentResponse.response_id.desc())
+        .first()
+    )
+
+    if existing_latest:
+        # Update existing latest response
+        for k, v in data.items():
+            setattr(existing_latest, k, v)
+        db.add(existing_latest)
+        db.commit()
+        db.refresh(existing_latest)
+        return {"message": "Assessment response updated successfully", "response_id": existing_latest.response_id}
+
+    # Otherwise create new response record
     new_response = AssessmentResponse(
-    assessment_id=assessment_id,
-    user_id=current_user.id,
-    **data
-)
+        assessment_id=assessment_id,
+        user_id=current_user.id,
+        **data
+    )
     
     db.add(new_response)
     db.commit()

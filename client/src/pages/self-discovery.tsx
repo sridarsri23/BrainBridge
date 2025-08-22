@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain } from "lucide-react";
+import { Brain, ArrowLeft } from "lucide-react";
 import AIAnalysisDemo from "@/components/ai/AIAnalysisDemo";
 import AssessmentResults from "@/components/assessments/AssessmentResults";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,6 +47,37 @@ export default function SelfDiscovery() {
   const [showResults, setShowResults] = useState<{ assessmentId: string; responses: Record<string, string> } | null>(null);
   const queryClient = useQueryClient();
   const { token } = useAuth();
+
+  // Load user's latest responses (persisted) to reflect completion across sessions
+  const { data: myResponses, refetch: refetchMyResponses } = useQuery({
+    queryKey: ['/api/assessment/assessments/my-responses'],
+    enabled: !!token,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const res = await fetch('/api/assessment/assessments/my-responses', { headers });
+      if (!res.ok) throw new Error(`Failed to load saved progress: ${res.status}`);
+      return res.json();
+    }
+  });
+
+  // Force-refresh progress when hub loads from landing or navigation
+  useEffect(() => {
+    if (token) {
+      refetchMyResponses();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  // Seed completed set from server responses (treat any recorded response as completed for now)
+  useEffect(() => {
+    if (Array.isArray(myResponses) && myResponses.length) {
+      const ids = myResponses.map((r: any) => String(r.assessment_id));
+      setCompletedQuizzes(new Set(ids));
+    }
+  }, [myResponses]);
 
   // Mock assessment data for now - in production this would come from the API
   const mockQuizzes: Quiz[] = [
@@ -153,9 +184,12 @@ export default function SelfDiscovery() {
 
     return response.json();
   },
-  onSuccess: (_, variables) => {
+  onSuccess: async (_, variables) => {
     setCompletedQuizzes(prev => new Set([...prev, variables.quizId]));
     queryClient.invalidateQueries({ queryKey: ['/api/assessment/quiz-templates'] });
+    // Ensure server progress reflects immediately
+    await queryClient.invalidateQueries({ queryKey: ['/api/assessment/assessments/my-responses'] });
+    await refetchMyResponses();
   }
 });
 
@@ -179,6 +213,16 @@ export default function SelfDiscovery() {
   if (quizzesLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        {/* Back to Landing */}
+        <div className="fixed top-4 left-4 z-50">
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="inline-flex items-center rounded-md border px-3 py-2 text-sm bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Back to landing"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </button>
+        </div>
         <div className="text-center">
           <Brain className="w-12 h-12 mx-auto text-blue-600 mb-4 animate-pulse" data-testid="icon-loading" />
           <p className="text-gray-600 dark:text-gray-400" data-testid="text-loading">
@@ -258,7 +302,18 @@ export default function SelfDiscovery() {
   if (showResults) {
     const assessmentTitle = quizzes.find((q: Quiz) => q.quiz_id === showResults.assessmentId)?.title || 'Assessment';
     return (
-      <AssessmentResults
+      <div className="relative min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Back to Landing */}
+        <div className="fixed top-4 left-4 z-50">
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="inline-flex items-center rounded-md border px-3 py-2 text-sm bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Back to landing"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </button>
+        </div>
+        <AssessmentResults
         assessmentId={showResults.assessmentId}
         assessmentTitle={assessmentTitle}
         responses={showResults.responses}
@@ -267,18 +322,43 @@ export default function SelfDiscovery() {
           setShowResults(null);
           setSelectedAssessment(null);
         }}
-      />
+        />
+      </div>
     );
   }
 
   // If an assessment is selected, render that component
   if (selectedAssessment) {
-    return renderAssessmentComponent();
+    return (
+      <div className="relative">
+        {/* Back to Landing */}
+        <div className="fixed top-4 left-4 z-50">
+          <button
+            onClick={() => (window.location.href = '/')}
+            className="inline-flex items-center rounded-md border px-3 py-2 text-sm bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+            aria-label="Back to landing"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" /> Back
+          </button>
+        </div>
+        {renderAssessmentComponent()}
+      </div>
+    );
   }
 
   // Assessment Selection View
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      {/* Back to Landing */}
+      <div className="fixed top-4 left-4 z-50">
+        <button
+          onClick={() => (window.location.href = '/')}
+          className="inline-flex items-center rounded-md border px-3 py-2 text-sm bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-label="Back to landing"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" /> Back
+        </button>
+      </div>
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="text-center mb-8">

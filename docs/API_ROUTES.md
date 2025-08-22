@@ -72,6 +72,20 @@ Base URL: `/api`
   - GET `/assessment/quiz-templates`
     - Returns available templates including `work_env_matchmaker`, `micro_briefing_comprehension`, and `sensory_profile_tolerance`.
 
+  - GET `/assessment/assessments/my-responses`
+    - Returns latest saved responses per assessment for the current user.
+    - Response example:
+      ```json
+      [
+        {
+          "assessment_id": "sensory_profile_tolerance",
+          "responses": { "noise": 6, "light": 3 },
+          "completion_time_seconds": 120,
+          "completed_at": "2025-08-22T12:34:56Z"
+        }
+      ]
+      ```
+
   - POST `/auth/login`
 
   - POST `/auth/logout`
@@ -114,4 +128,3 @@ Base URL: `/api`
 - __{full_path:path}__ (`/{full_path:path}`)
 
   - GET `/`
-
