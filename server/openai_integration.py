@@ -187,6 +187,44 @@ class AssessmentAnalyzer:
                                 break
                     recs["career_suggestions"] = recs["career_suggestions"][:6]
             
+            # Generic backfill to ensure UI sections are populated for all assessment types
+            # Ensure >=3 workplace accommodations
+            try:
+                if len(recs.get("workplace_accommodations", [])) < 3:
+                    generic_acc = [
+                        "Provide clear written agendas and task breakdowns",
+                        "Offer predictable routines with protected focus time",
+                        "Reduce frequent context switching via batch planning",
+                        "Permit noise-cancelling headphones and quiet zones",
+                        "Prefer async communication with written updates",
+                    ]
+                    for cand in generic_acc:
+                        if cand not in recs["workplace_accommodations"]:
+                            recs["workplace_accommodations"].append(cand)
+                            if len(recs["workplace_accommodations"]) >= 3:
+                                break
+                    recs["workplace_accommodations"] = recs["workplace_accommodations"][:5]
+            except Exception:
+                pass
+
+            # Ensure >=3 career suggestions with short rationales
+            try:
+                if len(recs.get("career_suggestions", [])) < 3:
+                    generic_roles = [
+                        "Technical writer — values clarity and structured, low-distraction work",
+                        "QA engineer — repeatable processes and methodical attention",
+                        "Business intelligence analyst — pattern recognition with limited interruptions",
+                        "Information architect — organization and documentation strengths",
+                    ]
+                    for cand in generic_roles:
+                        if cand not in recs["career_suggestions"]:
+                            recs["career_suggestions"].append(cand)
+                            if len(recs["career_suggestions"]) >= 3:
+                                break
+                    recs["career_suggestions"] = recs["career_suggestions"][:6]
+            except Exception:
+                pass
+
             # Add metadata
             analysis_result["analysis_timestamp"] = datetime.utcnow().isoformat()
             analysis_result["model_used"] = self.model
@@ -297,6 +335,133 @@ class AssessmentAnalyzer:
             "status": "fallback_mode",
             "assessment_type": assessment_type
         }
+
+    def grade_open_ended(
+        self,
+        video_url: Optional[str],
+        qa: Dict[str, str],
+        user_context: Optional[Dict] = None,
+    ) -> Dict[str, Any]:
+        """Grade open-ended answers on clarity, detail, relevance and return concise feedback.
+
+        Args:
+            video_url: Optional URL of the briefing video for context.
+            qa: Mapping of question_id -> answer (plain text).
+            user_context: Optional additional context.
+
+        Returns:
+            {"per_question": {qid: {scores..., rationale}}, "overall": {...}}
+        """
+        prompt = f"""
+        Please grade the following open-ended responses to a micro-briefing video.
+        Score each answer numerically 0-100 for clarity, detail, and relevance.
+        Provide a 1-2 sentence rationale per question and an overall summary with averaged scores.
+        Respond ONLY as strict JSON.
+
+        Video URL (may be null): {video_url}
+        Responses:
+        {json.dumps(qa, ensure_ascii=False, indent=2)}
+
+        JSON schema:
+        {{
+          "per_question": {{
+            "<question_id>": {{
+              "clarity": 0,
+              "detail": 0,
+              "relevance": 0,
+              "rationale": "1-2 sentences"
+            }}
+          }},
+          "overall": {{
+            "clarity": 0,
+            "detail": 0,
+            "relevance": 0,
+            "rationale": "1-2 sentences"
+          }}
+        }}
+        """
+
+        try:
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a fair and concise rubric-based grader."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                response_format={"type": "json_object"},
+                max_tokens=800,
+            )
+            content = response.choices[0].message.content
+            result = json.loads(content)
+
+            # sanitize numbers and ensure bounds
+            def clamp(x):
+                try:
+                    v = float(x)
+                except Exception:
+                    return 0
+                if v < 0:
+                    return 0
+                if v > 100:
+                    return 100
+                return round(v)
+
+            perq = result.get("per_question", {}) if isinstance(result, dict) else {}
+            for qid, obj in list(perq.items()):
+                if not isinstance(obj, dict):
+                    perq[qid] = {"clarity": 0, "detail": 0, "relevance": 0, "rationale": ""}
+                else:
+                    obj["clarity"] = clamp(obj.get("clarity", 0))
+                    obj["detail"] = clamp(obj.get("detail", 0))
+                    obj["relevance"] = clamp(obj.get("relevance", 0))
+                    obj["rationale"] = (obj.get("rationale") or "Concise feedback provided.").strip()
+
+            overall = result.get("overall", {}) if isinstance(result, dict) else {}
+            if not overall:
+                # compute simple average
+                vals = list(perq.values())
+                if vals:
+                    overall = {
+                        "clarity": round(sum(v["clarity"] for v in vals) / len(vals)),
+                        "detail": round(sum(v["detail"] for v in vals) / len(vals)),
+                        "relevance": round(sum(v["relevance"] for v in vals) / len(vals)),
+                        "rationale": "Overall scores computed from per-question averages.",
+                    }
+                else:
+                    overall = {"clarity": 0, "detail": 0, "relevance": 0, "rationale": "No answers."}
+            else:
+                overall["clarity"] = clamp(overall.get("clarity", 0))
+                overall["detail"] = clamp(overall.get("detail", 0))
+                overall["relevance"] = clamp(overall.get("relevance", 0))
+                overall["rationale"] = (overall.get("rationale") or "").strip() or "Overall evaluation."
+
+            return {"per_question": perq, "overall": overall, "model_used": self.model}
+        except Exception as e:
+            # heuristic fallback in limited mode
+            def score_text(t: str) -> Dict[str, int]:
+                t = t or ""
+                length = len(t.split())
+                clarity = 50 + min(50, max(0, length // 5))
+                detail = 40 + min(60, max(0, length // 4))
+                relevance = 60 if length > 0 else 0
+                return {"clarity": min(100, clarity), "detail": min(100, detail), "relevance": relevance}
+
+            perq = {}
+            for qid, ans in qa.items():
+                s = score_text(ans)
+                perq[qid] = {**s, "rationale": "Heuristic grading applied due to limited AI availability."}
+            vals = list(perq.values())
+            if vals:
+                overall = {
+                    "clarity": round(sum(v["clarity"] for v in vals) / len(vals)),
+                    "detail": round(sum(v["detail"] for v in vals) / len(vals)),
+                    "relevance": round(sum(v["relevance"] for v in vals) / len(vals)),
+                    "rationale": "Heuristic overall grade.",
+                }
+            else:
+                overall = {"clarity": 0, "detail": 0, "relevance": 0, "rationale": "No answers."}
+            return {"per_question": perq, "overall": overall, "model_used": "heuristic"}
 
     async def generate_job_matching_insights(
         self, 

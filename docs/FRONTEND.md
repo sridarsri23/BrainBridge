@@ -12,6 +12,14 @@
 - Base URL: `/api`
 - JWT from auth stored by `useAuth()` and attached to requests.
 
+## Assessments
+- Components live under `client/src/components/assessments/`
+  - `MicroBriefingComprehension.tsx` — video playback (react-player) + open-ended inputs; calls `POST /api/ai/grade-open-ended` for rubric grading.
+  - Integrated in `client/src/pages/self-discovery.tsx` via assessment type `micro_briefing_comprehension`.
+
+## Dependencies
+- `react-player` is used for embedded video playback.
+
 ## Build
 - Dev: `npm run dev`
 - Prod: `npm run build` outputs to `client/dist`

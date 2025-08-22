@@ -5,6 +5,8 @@
 - __Runner__: `run.py` starts backend (port 8001) and frontend (port 3000). `server/index.ts` is a Node bridge to start Python from Node if desired.
 - __Auth__: JWT-based in `server/auth.py`. Dependencies: `get_current_user()` guards protected routes.
 - __AI/Assessment__: Cognitive profile and assessments via `server/ai_agent.py`, `server/openai_integration.py`, and routes in `server/routers/assessment.py`.
+  - New micro-briefing video assessment with open-ended grading: endpoint `POST /api/ai/grade-open-ended` in `server/routers/ai_analysis.py`.
+  - Analyzer sanitizes/normalizes outputs and guarantees at least 3 `workplace_accommodations` and 3 `career_suggestions` across assessment types.
 - __Static Serving__: In production, `server/main.py` serves `client/dist` for SPA and `/api/*` for backend.
 
 ## Key Entry Points
