@@ -19,7 +19,7 @@ export function FormSelect({ control, name, label, placeholder, options, testId 
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+          <Select onValueChange={field.onChange} value={field.value}>
             <FormControl>
               <SelectTrigger data-testid={testId}>
                 <SelectValue placeholder={placeholder} />

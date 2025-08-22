@@ -8,9 +8,13 @@
   - Employer fields: company_name, job_title, company_size, industry, company_website, contact_person, contact_person_designation, company_email, company_verification_docs, is_dei_compliant, dei_compliance_provider
   - ND fields: date_of_birth, guardian_email, accommodation_needs, relationship, nd_adult_email
   - Identity & Medical: identity_verification_doc, has_neuro_condition_recognized, recognized_neuro_condition, nd_condition_proof_docs, medical_conditions
-  - Work prefs: preferred_work_environment, preferred_work_setup, notes
+  - Work prefs: location, preferred_work_environment, preferred_work_setup, availability_status, notes
   - Consents: public_profile_consent, privacy_agreed
   - created_at, updated_at, is_active
+
+  - Guardian notes:
+    - `nd_adult_email` is used by Guardians as "ND Mind Email" to link to the ND adult account.
+    - `identity_verification_doc` is a single filename string reused to store either ND adult or Guardian verification document.
 
 - __JobPosting__ (`job_postings`)
   - job_id (str, PK)

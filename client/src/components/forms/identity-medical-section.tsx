@@ -30,6 +30,11 @@ export function IdentityMedicalSection({ control, form }: IdentityMedicalSection
         type="file"
         testId="input-identity-verification"
       />
+      {form.watch("identityVerificationDoc") && (
+        <div className="text-xs text-gray-600">
+          Current: {form.watch("identityVerificationDoc")}
+        </div>
+      )}
 
       <FormCheckbox
         control={control}
@@ -54,7 +59,23 @@ export function IdentityMedicalSection({ control, form }: IdentityMedicalSection
         testId="input-nd-proof-docs"
         multiple={true}
         description="Upload up to 5 documents as proof of your neuro condition"
+        name="ndConditionProofDocs"
+        onChange={(e) => {
+          const files = (e.target as HTMLInputElement).files;
+          const names = files ? Array.from(files).map(f => f.name) : [];
+          form.setValue("ndConditionProofDocs", names, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+        }}
       />
+      {Array.isArray(form.watch("ndConditionProofDocs")) && form.watch("ndConditionProofDocs").length > 0 && (
+        <div className="text-xs text-gray-600 space-y-1">
+          <div>Saved documents:</div>
+          <ul className="list-disc pl-5">
+            {form.watch("ndConditionProofDocs").map((doc: string, idx: number) => (
+              <li key={idx}>{doc}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <FormTextarea
         control={control}

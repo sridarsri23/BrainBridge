@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 
 ## [2025-08-22]
+- Employer profile UI adjustments
+  - Hide ND-only fields for Employers: Date of Birth, Work Preferences (Location, Preferred Work Environment, Preferred Work Setup, Availability Status).
+  - Prevent ND-only fields from being sent on Employer saves in `client/src/pages/profile-management.tsx`.
+  - Verified employer fields save via `/api/user/profile`: `companyWebsite`, `contactPerson`, `contactPersonDesignation`, `companyEmail`, `companyVerificationDocs`, `isDeiCompliant`, `deiComplianceType`.
+
+- Guardian profile enhancements
+  - Added Guardian-specific section `client/src/components/forms/guardian-details-section.tsx` with:
+    - ND Mind Email input (`ndMindEmail`).
+    - Single Verification Document upload (`guardianVerificationDoc`).
+  - Wired into form schema and defaults in `client/src/components/forms/profile-form.tsx`.
+  - Initial data mapping updated in `client/src/pages/profile-management.tsx` to read `nd_adult_email` and map to `ndMindEmail`; reuse `identity_verification_doc` for `guardianVerificationDoc`.
+  - Backend `server/main.py`:
+    - GET `/api/user/profile`: expose `nd_adult_email` under `profile.nd_adult_email`.
+    - PUT `/api/user/profile`: map `ndMindEmail -> nd_adult_email`, `guardianVerificationDoc -> identity_verification_doc`.
+
 - Work Environment Matchmaker assessment
   - Backend template added in `server/assessment_templates.py` as `work_env_matchmaker` (gamified selections).
   - Frontend component `client/src/components/assessments/WorkEnvMatchmaker.tsx` created with bucket selection UI.

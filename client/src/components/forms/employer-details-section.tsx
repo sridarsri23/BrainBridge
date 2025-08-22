@@ -1,4 +1,3 @@
-import React from "react";
 import { FormInput } from "@/components/ui/form-input";
 import { FormSelect } from "@/components/ui/form-select";
 import { FormCheckbox } from "@/components/ui/form-checkbox";
@@ -7,7 +6,6 @@ import { FileUpload } from "@/components/ui/file-upload";
 interface EmployerDetailsSectionProps {
   control: any;
   form: any;
-  user: any;
 }
 
 const deiComplianceOptions = [
@@ -19,12 +17,26 @@ const deiComplianceOptions = [
   { value: "VT-HEC / La Verne Programs", label: "VT-HEC / La Verne Programs" }
 ];
 
-export function EmployerDetailsSection({ control, form, user }: EmployerDetailsSectionProps) {
+export function EmployerDetailsSection({ control, form }: EmployerDetailsSectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Company Details</h3>
-      <div className="text-sm text-gray-600 space-y-1 p-4 bg-gray-50 rounded-md">
-        <p><strong>Company Name:</strong> {user.company_name}</p>
+      <div className="grid md:grid-cols-2 gap-6">
+        <FormInput
+          control={control}
+          name="companyName"
+          label="Company Name"
+          placeholder="e.g., Acme Corp"
+          testId="input-company-name"
+        />
+        <FormInput
+          control={control}
+          name="phone"
+          label="Phone Number"
+          type="tel"
+          placeholder="(555) 123-4567"
+          testId="input-phone-employer"
+        />
       </div>
       
       <div className="grid md:grid-cols-2 gap-6">
@@ -68,7 +80,24 @@ export function EmployerDetailsSection({ control, form, user }: EmployerDetailsS
         testId="input-company-verification"
         multiple={true}
         description="Upload up to 5 documents for company verification"
+        name="companyVerificationDocs"
+        onChange={(e) => {
+          const files = (e.target as HTMLInputElement).files;
+          const names = files ? Array.from(files).map(f => f.name) : [];
+          form.setValue("companyVerificationDocs", names, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+        }}
       />
+
+      {Array.isArray(form.watch("companyVerificationDocs")) && form.watch("companyVerificationDocs").length > 0 && (
+        <div className="text-xs text-gray-600 space-y-1">
+          <div>Saved documents:</div>
+          <ul className="list-disc pl-5">
+            {form.watch("companyVerificationDocs").map((doc: string, idx: number) => (
+              <li key={idx}>{doc}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <FormCheckbox
         control={control}

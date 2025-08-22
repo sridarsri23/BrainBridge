@@ -8,6 +8,7 @@ import { IdentityMedicalSection } from "./identity-medical-section";
 import { WorkPreferencesSection } from "./work-preferences-section";
 import { EmployerDetailsSection } from "./employer-details-section";
 import { ConsentsSection } from "./consents-section";
+import { GuardianDetailsSection } from "./guardian-details-section";
 
 const profileFormSchema = z.object({
   // Personal Details
@@ -15,8 +16,12 @@ const profileFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Valid email is required"),
   phone: z.string().optional(),
+  companyName: z.string().optional(),
   dateOfBirth: z.string().optional(),
   guardianEmail: z.string().email().optional().or(z.literal("")),
+  // Guardian specific
+  ndMindEmail: z.string().email("Enter a valid ND Mind Email").optional().or(z.literal("")),
+  guardianVerificationDoc: z.string().optional(),
   
   // Identity & Medical
   identityVerificationDoc: z.string().optional(),
@@ -70,6 +75,7 @@ interface ProfileFormProps {
 export default function ProfileForm({ initialData, user, onDataChange }: ProfileFormProps) {
   const isNDAdult = user?.user_role === "ND_ADULT";
   const isEmployer = user?.user_role === "EMPLOYER";
+  const isGuardian = user?.user_role === "GUARDIAN";
   
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
@@ -78,8 +84,11 @@ export default function ProfileForm({ initialData, user, onDataChange }: Profile
       lastName: user?.last_name || "",
       email: user?.email || "",
       phone: user?.phone || "",
+      companyName: user?.company_name || "",
       dateOfBirth: initialData?.dateOfBirth || "",
       guardianEmail: initialData?.guardianEmail || "",
+      ndMindEmail: initialData?.ndMindEmail || "",
+      guardianVerificationDoc: initialData?.guardianVerificationDoc || "",
       location: initialData?.location || "",
       preferredWorkEnvironment: initialData?.preferredWorkEnvironment || "",
       availabilityStatus: initialData?.availabilityStatus || "Actively Looking",
@@ -99,6 +108,41 @@ export default function ProfileForm({ initialData, user, onDataChange }: Profile
     onDataChange(watchedValues);
   }, [watchedValues, onDataChange]);
 
+  // Ensure form reflects async-loaded initialData/user
+  useEffect(() => {
+    const values = {
+      firstName: user?.first_name || "",
+      lastName: user?.last_name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      companyName: user?.company_name || "",
+      dateOfBirth: initialData?.dateOfBirth || "",
+      guardianEmail: initialData?.guardianEmail || "",
+      ndMindEmail: initialData?.ndMindEmail || "",
+      guardianVerificationDoc: initialData?.guardianVerificationDoc || "",
+      location: initialData?.location || "",
+      preferredWorkEnvironment: initialData?.preferredWorkEnvironment || "",
+      preferredWorkSetup: initialData?.preferredWorkSetup,
+      availabilityStatus: initialData?.availabilityStatus ?? "Actively Looking",
+      hasNeuroConditionRecognized: initialData?.hasNeuroConditionRecognized || false,
+      recognizedNeuroCondition: initialData?.recognizedNeuroCondition,
+      identityVerificationDoc: initialData?.identityVerificationDoc || "",
+      ndConditionProofDocs: initialData?.ndConditionProofDocs || [],
+      medicalConditions: initialData?.medicalConditions || "",
+      publicProfileConsent: initialData?.publicProfileConsent || false,
+      privacyAgreed: initialData?.privacyAgreed || false,
+      // Employer
+      companyWebsite: initialData?.companyWebsite || "",
+      contactPerson: initialData?.contactPerson || "",
+      contactPersonDesignation: initialData?.contactPersonDesignation || "",
+      companyEmail: initialData?.companyEmail || "",
+      companyVerificationDocs: initialData?.companyVerificationDocs || [],
+      isDeiCompliant: initialData?.isDeiCompliant || false,
+      deiComplianceType: initialData?.deiComplianceType,
+    } as any;
+    form.reset(values);
+  }, [initialData, user, form]);
+
   if (!user) {
     return <div>Loading user information...</div>;
   }
@@ -108,7 +152,8 @@ export default function ProfileForm({ initialData, user, onDataChange }: Profile
       <form className="space-y-8">
         <PersonalDetailsSection 
           control={form.control} 
-          isNDAdult={isNDAdult} 
+          isNDAdult={isNDAdult}
+          isEmployer={isEmployer}
         />
 
         {/* ND Professional Fields */}
@@ -119,17 +164,23 @@ export default function ProfileForm({ initialData, user, onDataChange }: Profile
           />
         )}
 
-        <WorkPreferencesSection 
-          control={form.control} 
-          isNDAdult={isNDAdult} 
-        />
+        {/* Guardian Fields */}
+        {isGuardian && (
+          <GuardianDetailsSection control={form.control} />
+        )}
+
+        {isNDAdult && (
+          <WorkPreferencesSection 
+            control={form.control} 
+            isNDAdult={isNDAdult} 
+          />
+        )}
 
         {/* Employer Fields */}
         {isEmployer && (
           <EmployerDetailsSection 
             control={form.control} 
             form={form} 
-            user={user} 
           />
         )}
 

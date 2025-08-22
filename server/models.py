@@ -86,8 +86,10 @@ class User(Base):
     medical_conditions = Column(Text)
     
     # Work preferences (ND professional fields as requested by user)
+    location = Column(String)
     preferred_work_environment = Column(Text)
     preferred_work_setup = Column(String)
+    availability_status = Column(String)
     notes = Column(Text)
     
     # Consents (as requested by user)

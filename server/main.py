@@ -100,6 +100,8 @@ async def get_user_profile(current_user: User = Depends(get_current_user), db: S
             # Personal Details - all fields from users table
             "date_of_birth": str(current_user.date_of_birth) if current_user.date_of_birth is not None else None,
             "guardian_email": getattr(current_user, 'guardian_email', None),
+            "nd_adult_email": getattr(current_user, 'nd_adult_email', None),
+            "location": getattr(current_user, 'location', None),
             
             # Identity & Medical (ND Professional fields) - safely handle missing fields
             "identity_verification_doc": getattr(current_user, 'identity_verification_doc', None),
@@ -111,6 +113,7 @@ async def get_user_profile(current_user: User = Depends(get_current_user), db: S
             # Work Preferences - safely handle missing fields
             "preferred_work_environment": getattr(current_user, 'preferred_work_environment', None),
             "preferred_work_setup": getattr(current_user, 'preferred_work_setup', None),
+            "availability_status": getattr(current_user, 'availability_status', None),
             "notes": getattr(current_user, 'notes', None),
             
             # Consents - safely handle missing fields
@@ -140,11 +143,11 @@ async def update_user_profile(profile_data: dict, current_user: User = Depends(g
         print(f"Updating profile for user {current_user.id} with data: {profile_data}")
         
         # Update basic user fields that definitely exist
-        if "firstName" in profile_data and profile_data["firstName"]:
+        if "firstName" in profile_data and profile_data["firstName"] is not None:
             current_user.first_name = profile_data["firstName"]
             print(f"Updated first_name to: {profile_data['firstName']}")
             
-        if "lastName" in profile_data and profile_data["lastName"]:
+        if "lastName" in profile_data and profile_data["lastName"] is not None:
             current_user.last_name = profile_data["lastName"]
             print(f"Updated last_name to: {profile_data['lastName']}")
             
@@ -153,28 +156,89 @@ async def update_user_profile(profile_data: dict, current_user: User = Depends(g
             print(f"Updated phone to: {profile_data['phone']}")
         
         # Handle optional fields safely with setattr
+        # Map of frontend camelCase -> DB snake_case
         optional_fields = {
+            # Personal details
             "dateOfBirth": "date_of_birth",
             "guardianEmail": "guardian_email", 
+            # Guardian linking to ND adult
+            "ndMindEmail": "nd_adult_email",
+            # Allow guardian single verification doc via same field as ND identity doc
+            "guardianVerificationDoc": "identity_verification_doc",
             "location": "location",
+            "companyName": "company_name",
+            
+            # Work preferences
             "preferredWorkEnvironment": "preferred_work_environment",
+            "preferredWorkSetup": "preferred_work_setup",
             "availabilityStatus": "availability_status",
+            "notes": "notes",
+            
+            # ND fields
+            "identityVerificationDoc": "identity_verification_doc",
             "hasNeuroConditionRecognized": "has_neuro_condition_recognized",
+            "recognizedNeuroCondition": "recognized_neuro_condition",
+            "ndConditionProofDocs": "nd_condition_proof_docs",
             "medicalConditions": "medical_conditions",
+            
+            # Consents
             "publicProfileConsent": "public_profile_consent",
             "privacyAgreed": "privacy_agreed",
-            "isDeiCompliant": "is_dei_compliant"
+            
+            # Employer fields
+            "companyWebsite": "company_website",
+            "contactPerson": "contact_person",
+            "contactPersonDesignation": "contact_person_designation",
+            "companyEmail": "company_email",
+            "companyVerificationDocs": "company_verification_docs",
+            "isDeiCompliant": "is_dei_compliant",
+            # Frontend field used for provider choice
+            "deiComplianceType": "dei_compliance_provider",
         }
         
-        for frontend_field, db_field in optional_fields.items():
-            if frontend_field in profile_data:
+        # Pre-normalize specific field types
+        import datetime, json
+        normalized = dict(profile_data)
+        # Normalize date: empty string -> None; valid YYYY-MM-DD -> date
+        if "dateOfBirth" in normalized:
+            dob = normalized.get("dateOfBirth")
+            if dob in ("", None):
+                normalized["dateOfBirth"] = None
+            else:
                 try:
-                    setattr(current_user, db_field, profile_data[frontend_field])
-                    print(f"Updated {db_field} to: {profile_data[frontend_field]}")
+                    # Accept ISO date or date-like strings
+                    normalized["dateOfBirth"] = datetime.date.fromisoformat(str(dob))
+                except Exception:
+                    # If unparsable, set None rather than failing
+                    print("Warning: Unparsable dateOfBirth, setting to None")
+                    normalized["dateOfBirth"] = None
+        # Ensure JSON array fields are lists (not JSON strings)
+        for arr_field in ("ndConditionProofDocs", "companyVerificationDocs"):
+            if arr_field in normalized:
+                val = normalized.get(arr_field)
+                if isinstance(val, str):
+                    try:
+                        parsed = json.loads(val)
+                        if isinstance(parsed, list):
+                            normalized[arr_field] = parsed
+                    except Exception:
+                        # fallback to empty list on bad input
+                        normalized[arr_field] = []
+                elif val is None:
+                    normalized[arr_field] = []
+                elif not isinstance(val, list):
+                    # Coerce non-list truthy values into list
+                    normalized[arr_field] = [val]
+
+        for frontend_field, db_field in optional_fields.items():
+            if frontend_field in normalized:
+                try:
+                    setattr(current_user, db_field, normalized[frontend_field])
+                    print(f"Updated {db_field} to: {normalized[frontend_field]}")
                 except Exception as field_error:
                     print(f"Warning: Could not update {db_field}: {str(field_error)}")
                     # Continue with other fields instead of failing completely
-            
+        
         db.commit()
         db.refresh(current_user)
         print("Profile update successful")

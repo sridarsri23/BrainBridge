@@ -22,13 +22,31 @@ export function FormInput({ control, name, label, placeholder, type = "text", te
         <FormItem>
           <FormLabel>{label} {required && '*'}</FormLabel>
           <FormControl>
-            <Input 
-              type={type}
-              placeholder={placeholder}
-              {...field} 
-              data-testid={testId}
-              readOnly={readonly}
-            />
+            {type === 'file' ? (
+              <Input
+                type="file"
+                placeholder={placeholder}
+                name={field.name}
+                ref={field.ref}
+                // Do not bind value for file inputs; update form with file name/path or File object as needed
+                onChange={(e) => {
+                  const files = (e.target as HTMLInputElement).files;
+                  // Store file name (string) to align with current backend expectation
+                  const value = files && files.length > 0 ? files[0].name : "";
+                  field.onChange(value);
+                }}
+                data-testid={testId}
+                readOnly={readonly}
+              />
+            ) : (
+              <Input 
+                type={type}
+                placeholder={placeholder}
+                {...field}
+                data-testid={testId}
+                readOnly={readonly}
+              />
+            )}
           </FormControl>
           <FormMessage />
         </FormItem>

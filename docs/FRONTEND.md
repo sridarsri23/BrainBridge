@@ -26,3 +26,14 @@
 ## Build
 - Dev: `npm run dev`
 - Prod: `npm run build` outputs to `client/dist`
+
+## Profile Form
+- Component: `client/src/components/forms/profile-form.tsx`
+- Guardian section UI: `client/src/components/forms/guardian-details-section.tsx`
+  - Fields (Guardian-only):
+    - `ndMindEmail` (maps to backend `nd_adult_email`)
+    - `guardianVerificationDoc` (single filename; stored in backend `identity_verification_doc`)
+  - File input behavior: cannot prefill; filename preview shown via `useWatch` next to the input.
+- Payload handling (Guardian):
+  - Frontend strips `identityVerificationDoc` from PUT `/api/user/profile` payload to avoid overwriting.
+  - Sends `guardianVerificationDoc` instead; backend maps to `identity_verification_doc`.

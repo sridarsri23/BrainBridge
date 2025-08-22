@@ -117,6 +117,18 @@ Base URL: `/api`
   - GET `/user/profile`
 
   - PUT `/user/profile`
+    - Request body (selected fields supported; camelCase mapped to DB snake_case):
+      - Personal: `firstName`, `lastName`, `phone`, `dateOfBirth`, `guardianEmail`, `location`, `companyName`
+      - ND: `identityVerificationDoc`, `hasNeuroConditionRecognized`, `recognizedNeuroCondition`, `ndConditionProofDocs`, `medicalConditions`
+      - Work Prefs: `preferredWorkEnvironment`, `preferredWorkSetup`, `availabilityStatus`, `notes`
+      - Consents: `publicProfileConsent`, `privacyAgreed`
+      - Employer: `companyWebsite`, `contactPerson`, `contactPersonDesignation`, `companyEmail`, `companyVerificationDocs`, `isDeiCompliant`, `deiComplianceType`
+      - Guardian-specific:
+        - `ndMindEmail` → maps to `nd_adult_email` (links Guardian to ND adult)
+        - `guardianVerificationDoc` → maps to `identity_verification_doc` (single file name)
+    - Notes:
+      - Frontend prevents Guardians from sending `identityVerificationDoc` to avoid clobbering the saved doc; Guardians use `guardianVerificationDoc` instead.
+      - Arrays like `ndConditionProofDocs` and `companyVerificationDocs` can be sent as arrays or JSON strings; backend normalizes them.
 
   - GET `/users/me`
 

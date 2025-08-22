@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,45 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import ProfileForm from "@/components/forms/profile-form";
+
+function mapProfileResponseToForm(data: any) {
+  if (!data) return {};
+  const p = data.profile || {};
+  return {
+    // Personal
+    dateOfBirth: p.date_of_birth ?? "",
+    guardianEmail: p.guardian_email ?? "",
+    ndMindEmail: p.nd_adult_email ?? "",
+    location: p.location ?? "",
+    
+    // ND fields
+    identityVerificationDoc: p.identity_verification_doc ?? "",
+    guardianVerificationDoc: p.identity_verification_doc ?? "",
+    hasNeuroConditionRecognized: p.has_neuro_condition_recognized ?? false,
+    recognizedNeuroCondition: p.recognized_neuro_condition ?? undefined,
+    ndConditionProofDocs: p.nd_condition_proof_docs ?? [],
+    medicalConditions: p.medical_conditions ?? "",
+
+    // Work Preferences
+    preferredWorkEnvironment: p.preferred_work_environment ?? "",
+    preferredWorkSetup: p.preferred_work_setup ?? undefined,
+    availabilityStatus: p.availability_status ?? undefined,
+    notes: p.notes ?? "",
+
+    // Consents
+    publicProfileConsent: p.public_profile_consent ?? false,
+    privacyAgreed: p.privacy_agreed ?? false,
+
+    // Employer fields
+    companyWebsite: p.company_website ?? "",
+    contactPerson: p.contact_person ?? "",
+    contactPersonDesignation: p.contact_person_designation ?? "",
+    companyEmail: p.company_email ?? "",
+    companyVerificationDocs: p.company_verification_docs ?? [],
+    isDeiCompliant: p.is_dei_compliant ?? false,
+    deiComplianceType: p.dei_compliance_provider ?? undefined,
+  };
+}
 
 export default function ProfileManagement() {
   const { user, isLoading } = useAuth();
@@ -20,6 +59,8 @@ export default function ProfileManagement() {
     queryKey: ["/api/user/profile"],
     enabled: !!user,
   });
+
+  const initialFormData = useMemo(() => mapProfileResponseToForm(profile), [profile]);
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
@@ -46,9 +87,27 @@ export default function ProfileManagement() {
 
   const handleSaveProfile = useCallback(() => {
     if (Object.keys(formData).length > 0) {
-      updateProfileMutation.mutate(formData);
+      let payload: any = { ...formData };
+      // For employer role, strip ND-only fields per requirements
+      if (user?.user_role === "EMPLOYER") {
+        const removeKeys = [
+          "dateOfBirth",
+          "location",
+          "preferredWorkEnvironment",
+          "preferredWorkSetup",
+          "availabilityStatus",
+        ];
+        for (const k of removeKeys) delete payload[k];
+      }
+      // For guardian role, avoid clobbering identity doc: only send guardianVerificationDoc
+      if (user?.user_role === "GUARDIAN") {
+        // Remove the ND adult identity field to prevent overwriting with ""
+        delete payload.identityVerificationDoc;
+        // Keep guardianVerificationDoc which maps to the same backend column
+      }
+      updateProfileMutation.mutate(payload);
     }
-  }, [formData, updateProfileMutation]);
+  }, [formData, updateProfileMutation, user]);
 
   const handleFormDataChange = useCallback((data: any) => {
     setFormData(data);
@@ -139,7 +198,7 @@ export default function ProfileManagement() {
             <CardDescription>
               {user.user_role === "ND_ADULT" 
                 ? "Fill out your comprehensive ND professional profile with verification, conditions, work preferences, and consents."
-                : "Update your professional information and preferences."
+                : "Update Your Business Details"
               }
             </CardDescription>
           </CardHeader>
@@ -147,7 +206,7 @@ export default function ProfileManagement() {
             
             {/* New Comprehensive Profile Form */}
             <ProfileForm 
-              initialData={profile}
+              initialData={initialFormData}
               user={user}
               onDataChange={handleFormDataChange}
             />
