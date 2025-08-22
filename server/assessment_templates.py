@@ -6,6 +6,34 @@ Each assessment section contains 10+ questions for proper profiling
 def get_comprehensive_assessments():
     return [
         {
+            "quiz_id": "work_env_matchmaker",
+            "title": "🎮 Work Environment Matchmaker",
+            "description": "Drag-and-drop your workplace needs into Must/Nice-to-have/Avoid to map CDC-aligned strengths and sensitivities.",
+            "activity_type": "gamified_selections",
+            "estimated_time": 6,
+            "cdc_focus": ["sensory_processing", "attention_filtering", "verbal_communication", "executive_function"],
+            "questions": [
+                {
+                    "question_id": "wem_needs",
+                    "question_text": "Sort these needs into Must / Nice-to-have / Avoid",
+                    "question_type": "drag_drop_buckets",
+                    "options": [
+                        "Quiet space",
+                        "Visual instructions",
+                        "Async communication",
+                        "Flexible hours",
+                        "Noise-cancelling headphones",
+                        "Natural lighting",
+                        "Clear written agendas",
+                        "Frequent context switching",
+                        "Pair programming",
+                        "Open office chatter"
+                    ],
+                    "cdc_targets": ["sensory_processing", "attention_filtering", "verbal_communication", "executive_function"]
+                }
+            ]
+        },
+        {
             "quiz_id": "focus_attention_assessment",
             "title": "🎯 Focus & Attention Explorer",
             "description": "Discover your natural focus patterns and attention preferences through engaging scenarios",

@@ -12,3 +12,23 @@ It provides AI-driven task matching, and inclusion-focused analytics to empower 
 - **Secure Role-Based Access Control** – Fine-grained permissions for admins, recruiters, and candidates.
 - **Responsive UI** – Accessible, mobile-friendly design built with Tailwind CSS.
 - **Scalable Backend** – Modular and API-first architecture
+
+---
+
+## 📚 Documentation
+
+- Architecture: `docs/ARCHITECTURE.md`
+- Setup: `docs/SETUP.md`
+- Runbook: `docs/RUNBOOK.md`
+- API Routes: `docs/API_ROUTES.md`
+- Data Model: `docs/DATA_MODEL.md`
+- Frontend: `docs/FRONTEND.md`
+- Changelog: `docs/CHANGELOG.md`
+
+Regenerate API routes doc:
+
+```bash
+npm run docs:api
+```
+
+Update docs when you change code or fix bugs. Log notable changes in `docs/CHANGELOG.md`.

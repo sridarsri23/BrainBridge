@@ -117,7 +117,7 @@ def run_backend(manager: ProcessManager):
     return manager.run_command(
         ["python3", "run_fastapi.py"],
         cwd=BASE_DIR,
-        env={"PYTHONPATH": str(BASE_DIR)}
+        env={"PYTHONPATH": str(BASE_DIR), "PORT": "8001"}
     )
 
 def run_frontend(manager: ProcessManager):
@@ -193,7 +193,7 @@ def main():
         
         print("\n✅ BrainBridge is running!")
         print("   Frontend: http://localhost:3000")
-        print("   Backend API: http://localhost:8000")
+        print("   Backend API: http://localhost:8001")
         print("\n📌 Press Ctrl+C to stop all services")
         
         # Keep the main process alive

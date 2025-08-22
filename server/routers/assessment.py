@@ -91,10 +91,34 @@ async def submit_assessment_response(
     # Verify assessment exists
     assessment = db.query(Assessment).filter(Assessment.assessment_id == assessment_id).first()
     if not assessment:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Assessment not found"
-        )
+        # Attempt to auto-create from templates for known assessments
+        try:
+            from server.assessment_templates import get_comprehensive_assessments
+            templates = {item["quiz_id"]: item for item in get_comprehensive_assessments()}
+            if assessment_id in templates:
+                t = templates[assessment_id]
+                assessment = Assessment(
+                    assessment_id=assessment_id,
+                    user_id=current_user.id,
+                    title=t.get("title", assessment_id.replace("_", " ").title()),
+                    description=t.get("description", ""),
+                    assessment_type=t.get("quiz_id", assessment_id),
+                    questions=t.get("questions", []),
+                    is_active=True,
+                )
+                db.add(assessment)
+                db.commit()
+                db.refresh(assessment)
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Assessment not found"
+                )
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assessment not found"
+            )
     
     # Create response record
     data = response_data.model_dump(exclude={"assessment_id"})

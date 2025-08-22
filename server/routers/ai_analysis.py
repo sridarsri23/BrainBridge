@@ -149,11 +149,11 @@ async def analyze_assessment_with_ai(
             "user_id": current_user.id,
             "user_role": current_user.user_role,
             "assessment_id": assessment_id,
-            "response_count": len(responses)
+            "response_count": len(response_data)
         }
         
         # Get AI analysis using GPT-4o
-        ai_analysis = await assessment_analyzer.analyze_assessment_responses(
+        ai_analysis = assessment_analyzer.analyze_assessment_responses(
             responses=response_data,
             assessment_type=assessment_id,
             user_context=user_context
@@ -251,7 +251,7 @@ async def get_ai_cognitive_profile(
         # Generate comprehensive cognitive profile
         comprehensive_analysis = {}
         for assessment_id, responses in responses_by_assessment.items():
-            analysis = await assessment_analyzer.analyze_assessment_responses(
+            analysis = assessment_analyzer.analyze_assessment_responses(
                 responses=responses,
                 assessment_type=assessment_id,
                 user_context={"user_id": user_id}

@@ -13,14 +13,14 @@ from datetime import datetime
 # Initialize AIML client
 client = OpenAI(
     base_url="https://api.aimlapi.com/v1",
-    api_key=os.getenv("AIML_API_KEY"),   # ✅ just the key
+    api_key=os.getenv("AIML_API_KEY"),   # just the key
 )
 
 class AssessmentAnalyzer:
     """AI-powered assessment analyzer using AIML GPT models for cognitive profile analysis"""
     
     def __init__(self):
-        self.model = "openai/gpt-5-chat-latest"  # ✅ AIML’s latest GPT model
+        self.model = "openai/gpt-5-chat-latest"  # AIML’s latest GPT model
         
     def analyze_assessment_responses(
         self, 
@@ -59,8 +59,133 @@ class AssessmentAnalyzer:
             
             print("RAW MODEL OUTPUT:", response.choices[0].message)
 
-            analysis_result = response.choices[0].message.content  # ✅ use .content
+            analysis_result = response.choices[0].message.content  # use .content
             analysis_result = json.loads(analysis_result)
+            
+            # Recursive sanitizer to drop empty-string keys produced by LLMs
+            def _clean_empty_keys(obj):
+                if isinstance(obj, dict):
+                    return {k: _clean_empty_keys(v) for k, v in obj.items() if k != ""}
+                if isinstance(obj, list):
+                    return [_clean_empty_keys(x) for x in obj]
+                return obj
+            analysis_result = _clean_empty_keys(analysis_result)
+            
+            # Sanitize unexpected empty keys from model output
+            if isinstance(analysis_result, dict) and "" in analysis_result:
+                analysis_result.pop("", None)
+            
+            # Ensure required sections exist
+            analysis_result.setdefault("cognitive_profile", {})
+            analysis_result.setdefault("insights", {})
+            analysis_result.setdefault("recommendations", {})
+            recs = analysis_result["recommendations"]
+            recs.setdefault("workplace_accommodations", [])
+            recs.setdefault("career_suggestions", [])
+            recs.setdefault("development_opportunities", [])
+            
+            # Map common aliases
+            if "summary" not in analysis_result and "_summary" in analysis_result:
+                analysis_result["summary"] = analysis_result.pop("_summary")
+            if "confidence_score" not in analysis_result and "_score" in analysis_result:
+                analysis_result["confidence_score"] = analysis_result.pop("_score")
+            
+            # Normalize confidence_score
+            try:
+                cs = float(analysis_result.get("confidence_score", 0.85))
+                # clamp to [0,1] if it's a percentage or out of bounds
+                if cs > 1.0:
+                    cs = cs / 100.0 if cs <= 100 else 1.0
+                if cs < 0:
+                    cs = 0.0
+                analysis_result["confidence_score"] = round(cs, 4)
+            except Exception:
+                analysis_result["confidence_score"] = 0.85
+            
+            # Ensure non-empty summary
+            if not analysis_result.get("summary") or not str(analysis_result.get("summary")).strip():
+                cp = analysis_result.get("cognitive_profile", {})
+                strengths = ", ".join((cp.get("primary_strengths") or [])[:2]) or "clear strengths"
+                prefs = ", ".join((cp.get("processing_preferences") or [])[:2]) or "supportive routines"
+                wc = ", ".join((cp.get("optimal_work_conditions") or [])[:1]) or "well-structured, low-distraction settings"
+                analysis_result["summary"] = (
+                    f"This professional shows {strengths} and benefits from {prefs}. "
+                    f"They thrive in {wc} and perform best with practical accommodations that reduce interruptions."
+                )
+            
+            # If work_env_matchmaker, derive from parsed buckets when missing/too sparse
+            if assessment_type == "work_env_matchmaker":
+                wem = {}
+                try:
+                    raw = responses.get("wem_needs") if isinstance(responses, dict) else None
+                    parsed = json.loads(raw) if isinstance(raw, str) else (raw or {})
+                    wem = {
+                        "must": [k for k, v in parsed.items() if v == "Must"],
+                        "nice": [k for k, v in parsed.items() if v == "Nice-to-have"],
+                        "avoid": [k for k, v in parsed.items() if v == "Avoid"],
+                    }
+                except Exception:
+                    wem = {}
+                # Backfill accommodations (ensure >=3)
+                if len(recs["workplace_accommodations"]) < 3 and wem:
+                    adds = []
+                    all_items = (wem.get("must", []) or []) + (wem.get("nice", []) or [])
+                    lowered = " ".join(all_items).lower()
+                    if "noise" in lowered or "quiet" in lowered:
+                        adds.append("Provide noise-cancelling headphones and quiet zones")
+                    if "async" in lowered or "written" in lowered:
+                        adds.append("Prefer async communication with written updates")
+                    if any("flexible hours" in s.lower() or "flexible" in s.lower() for s in all_items):
+                        adds.append("Offer flexible scheduling aligned with energy peaks")
+                    if wem.get("avoid"):
+                        adds.append("Minimize mandatory pair programming; offer solo focus blocks")
+                    for a in adds:
+                        if a not in recs["workplace_accommodations"]:
+                            recs["workplace_accommodations"].append(a)
+                    # Pad generically if still short
+                    while len(recs["workplace_accommodations"]) < 3:
+                        for cand in [
+                            "Provide clear written agendas and task breakdowns",
+                            "Offer predictable routines with protected focus time",
+                            "Reduce frequent context switching via batch planning",
+                        ]:
+                            if cand not in recs["workplace_accommodations"]:
+                                recs["workplace_accommodations"].append(cand)
+                                break
+                    recs["workplace_accommodations"] = recs["workplace_accommodations"][:5]
+                # Backfill career suggestions
+                if len(recs["career_suggestions"]) < 3 and wem:
+                    suggestions = []
+                    all_items = (wem.get("must", []) or []) + (wem.get("nice", []) or [])
+                    avoid_items = (wem.get("avoid", []) or [])
+                    if any("context switching" in s.lower() for s in avoid_items):
+                        suggestions.append("Data analyst — deep focus, low context switching")
+                        suggestions.append("Technical writer — favors structured, async communication")
+                    if any("pair programming" in s.lower() for s in avoid_items):
+                        suggestions.append("Individual-contributor software engineer — supports autonomy and focus")
+                    if any("flexible" in s.lower() for s in all_items):
+                        suggestions.append("Research engineer — flexible hours for deep work")
+                    # add rationales inline if missing
+                    cleaned = []
+                    for s in suggestions:
+                        if "—" not in s:
+                            cleaned.append(f"{s} — aligns with stated work preferences")
+                        else:
+                            cleaned.append(s)
+                    for s in cleaned:
+                        if s not in recs["career_suggestions"]:
+                            recs["career_suggestions"].append(s)
+                    # Pad generically if still short
+                    while len(recs["career_suggestions"]) < 3:
+                        for cand in [
+                            "QA engineer — structured scenarios and repeatable processes",
+                            "Information architect — clarity, organization, and documentation",
+                            "Business intelligence analyst — pattern recognition with low interruptions",
+                        ]:
+                            if cand not in recs["career_suggestions"]:
+                                recs["career_suggestions"].append(cand)
+                                break
+                    recs["career_suggestions"] = recs["career_suggestions"][:6]
             
             # Add metadata
             analysis_result["analysis_timestamp"] = datetime.utcnow().isoformat()
@@ -81,16 +206,47 @@ class AssessmentAnalyzer:
     ) -> str:
         """Create a detailed prompt for GPT analysis"""
         
+        # Work Environment Matchmaker special handling: parse bucketed needs
+        wem_context = {}
+        if assessment_type == "work_env_matchmaker":
+            try:
+                raw = responses.get("wem_needs") if isinstance(responses, dict) else None
+                parsed = json.loads(raw) if isinstance(raw, str) else (raw or {})
+                must = [k for k, v in parsed.items() if v == "Must"]
+                nice = [k for k, v in parsed.items() if v == "Nice-to-have"]
+                avoid = [k for k, v in parsed.items() if v == "Avoid"]
+                wem_context = {
+                    "work_env_matchmaker": {
+                        "must": must,
+                        "nice_to_have": nice,
+                        "avoid": avoid,
+                        "item_to_bucket": parsed,
+                    }
+                }
+            except Exception:
+                # If parsing fails, continue with raw responses
+                wem_context = {"work_env_matchmaker": {"parse_status": "failed", "raw": responses.get("wem_needs")}}
+
         prompt = f"""
         Please analyze the following {assessment_type.replace('_', ' ')} assessment responses for a neurodivergent professional.
         
         Assessment Responses:
         {json.dumps(responses, indent=2)}
         
+        Derived Context (if available):
+        {json.dumps(wem_context, indent=2)}
+        
         User Context:
         {json.dumps(user_context or {}, indent=2)}
         
-        Provide a comprehensive analysis in JSON format with the following structure:
+        Provide a comprehensive analysis in JSON format with the following structure.
+        IMPORTANT REQUIREMENTS:
+        - Always include a non-empty 2-3 sentence "summary".
+        - Always include at least 3 "workplace_accommodations" tailored to the inputs.
+        - Always include at least 3 "career_suggestions" with short rationales.
+        - Do not output placeholders like "No suggestions available".
+        - Be strengths-based and practical.
+        
         {{
             "cognitive_profile": {{
                 "primary_strengths": ["strength1", "strength2", "strength3"],
@@ -103,8 +259,12 @@ class AssessmentAnalyzer:
                 "potential_challenges": "Areas that might need support (framed positively)"
             }},
             "recommendations": {{
-                "workplace_accommodations": ["accommodation1", "accommodation2"],
-                "career_suggestions": ["suggestion1", "suggestion2"],
+                "workplace_accommodations": ["accommodation1", "accommodation2", "accommodation3"],
+                "career_suggestions": [
+                  "Role A — rationale",
+                  "Role B — rationale",
+                  "Role C — rationale"
+                ],
                 "development_opportunities": ["opportunity1", "opportunity2"]
             }},
             "confidence_score": 0.85,

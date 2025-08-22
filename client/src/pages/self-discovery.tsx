@@ -6,7 +6,7 @@ import { Brain } from "lucide-react";
 import AIAnalysisDemo from "@/components/ai/AIAnalysisDemo";
 import AssessmentResults from "@/components/assessments/AssessmentResults";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+// import { apiRequest } from "@/lib/queryClient"; // not used here
 
 // Import separate assessment components
 import { AssessmentCard } from "@/components/assessments/AssessmentCard";
@@ -16,6 +16,7 @@ import { CommunicationAssessment } from "@/components/assessments/CommunicationA
 import { CreativeExecutiveAssessment } from "@/components/assessments/CreativeExecutiveAssessment";
 import { ProcessingMotorAssessment } from "@/components/assessments/ProcessingMotorAssessment";
 import { MultitaskingSensoryAssessment } from "@/components/assessments/MultitaskingSensoryAssessment";
+import WorkEnvMatchmaker from "@/components/assessments/WorkEnvMatchmaker";
 
 interface Quiz {
   quiz_id: string;
@@ -27,6 +28,7 @@ interface Quiz {
 }
 
 type AssessmentType = 
+  | 'work_env_matchmaker'
   | 'focus_attention_assessment'
   | 'pattern_spatial_assessment'
   | 'communication_assessment'
@@ -44,6 +46,14 @@ export default function SelfDiscovery() {
 
   // Mock assessment data for now - in production this would come from the API
   const mockQuizzes: Quiz[] = [
+    {
+      quiz_id: 'work_env_matchmaker',
+      title: '🎮 Work Environment Matchmaker',
+      description: 'Sort workplace needs into Must / Nice-to-have / Avoid to reveal strengths & sensitivities.',
+      activity_type: 'gamified_selections',
+      estimated_time: 6,
+      cdc_focus: ['sensory_processing', 'attention_filtering', 'verbal_communication', 'executive_function']
+    },
     {
       quiz_id: 'focus_attention_assessment',
       title: '🎯 Focus & Attention Explorer',
@@ -105,12 +115,11 @@ export default function SelfDiscovery() {
   // Submit assessment response mutation
   const submitResponseMutation = useMutation({
   mutationFn: async (data: { quizId: string; responses: Record<string, string> }) => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     const response = await fetch(`/api/assessment/assessments/${data.quizId}/respond`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,  // ✅ now this will be correct
-      },
+      headers,
       body: JSON.stringify({
         assessment_id: data.quizId,   // required by model
         responses: data.responses,
@@ -170,6 +179,10 @@ export default function SelfDiscovery() {
     
     // Try to submit in background (optional for demo)
     try {
+      if (!token) {
+        console.log('Skipping submission: no auth token present');
+        return; // avoid 401 spam in demo
+      }
       await submitResponseMutation.mutateAsync({ quizId, responses });
       console.log('Assessment submitted successfully');
     } catch (error) {
@@ -198,6 +211,8 @@ export default function SelfDiscovery() {
     };
 
     switch (selectedAssessment) {
+      case 'work_env_matchmaker':
+        return <WorkEnvMatchmaker {...commonProps} />;
       case 'focus_attention_assessment':
         return <FocusAttentionAssessment {...commonProps} />;
       case 'pattern_spatial_assessment':
@@ -217,7 +232,7 @@ export default function SelfDiscovery() {
 
   // If showing assessment results, render results component
   if (showResults) {
-    const assessmentTitle = quizzes.find(q => q.quiz_id === showResults.assessmentId)?.title || 'Assessment';
+    const assessmentTitle = quizzes.find((q: Quiz) => q.quiz_id === showResults.assessmentId)?.title || 'Assessment';
     return (
       <AssessmentResults
         assessmentId={showResults.assessmentId}
