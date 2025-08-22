@@ -18,6 +18,7 @@ import { ProcessingMotorAssessment } from "@/components/assessments/ProcessingMo
 import { MultitaskingSensoryAssessment } from "@/components/assessments/MultitaskingSensoryAssessment";
 import WorkEnvMatchmaker from "@/components/assessments/WorkEnvMatchmaker";
 import MicroBriefingComprehension from "@/components/assessments/MicroBriefingComprehension";
+import SensoryProfileTolerance from "@/components/assessments/SensoryProfileTolerance";
 
 interface Quiz {
   quiz_id: string;
@@ -31,6 +32,7 @@ interface Quiz {
 type AssessmentType = 
   | 'work_env_matchmaker'
   | 'micro_briefing_comprehension'
+  | 'sensory_profile_tolerance'
   | 'focus_attention_assessment'
   | 'pattern_spatial_assessment'
   | 'communication_assessment'
@@ -63,6 +65,14 @@ export default function SelfDiscovery() {
       activity_type: 'video_open_ended',
       estimated_time: 5,
       cdc_focus: ['verbal_communication', 'communication_interpretation']
+    },
+    {
+      quiz_id: 'sensory_profile_tolerance',
+      title: '🎚 Sensory Profile & Tolerance',
+      description: 'Likert sliders on light, noise, interruptions, texture, context switching + optional AI summary.',
+      activity_type: 'sliders_checkboxes',
+      estimated_time: 4,
+      cdc_focus: ['sensory_processing', 'attention_filtering']
     },
     {
       quiz_id: 'focus_attention_assessment',
@@ -225,6 +235,8 @@ export default function SelfDiscovery() {
         return <WorkEnvMatchmaker {...commonProps} />;
       case 'micro_briefing_comprehension':
         return <MicroBriefingComprehension {...commonProps} />;
+      case 'sensory_profile_tolerance':
+        return <SensoryProfileTolerance {...commonProps} />;
       case 'focus_attention_assessment':
         return <FocusAttentionAssessment {...commonProps} />;
       case 'pattern_spatial_assessment':

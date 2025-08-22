@@ -16,9 +16,12 @@
 - Components live under `client/src/components/assessments/`
   - `MicroBriefingComprehension.tsx` — video playback (react-player) + open-ended inputs; calls `POST /api/ai/grade-open-ended` for rubric grading.
   - Integrated in `client/src/pages/self-discovery.tsx` via assessment type `micro_briefing_comprehension`.
+  - `SensoryProfileTolerance.tsx` — Likert sliders (Radix Slider) + checkboxes, deterministic local scoring. Optional AI summary via `POST /api/ai/demo-analyze/sensory_profile_tolerance` (works in demo without AI key; real analysis uses `/ai/analyze-assessment/{id}` when configured).
+  - Integrated in `client/src/pages/self-discovery.tsx` via assessment type `sensory_profile_tolerance`.
 
 ## Dependencies
 - `react-player` is used for embedded video playback.
+- `@radix-ui/react-slider` is used for Likert sliders.
 
 ## Build
 - Dev: `npm run dev`

@@ -12,6 +12,9 @@ It provides AI-driven task matching, and inclusion-focused analytics to empower 
 - **Secure Role-Based Access Control** – Fine-grained permissions for admins, recruiters, and candidates.
 - **Responsive UI** – Accessible, mobile-friendly design built with Tailwind CSS.
 - **Scalable Backend** – Modular and API-first architecture
+- **Assessments** – Self-discovery suite including:
+  - 🎬 Micro-briefing Comprehension (video + open-ended grading)
+  - 🎚 Sensory Profile & Tolerance (Likert sliders + checkboxes; optional AI summary)
 
 ---
 
@@ -24,6 +27,10 @@ It provides AI-driven task matching, and inclusion-focused analytics to empower 
 - Data Model: `docs/DATA_MODEL.md`
 - Frontend: `docs/FRONTEND.md`
 - Changelog: `docs/CHANGELOG.md`
+ 
+Key endpoints for assessments:
+- `POST /api/ai/grade-open-ended` – rubric-grade open responses
+- `POST /api/ai/demo-analyze/{assessment_id}` – optional AI summary (demo-safe)
 
 Regenerate API routes doc:
 

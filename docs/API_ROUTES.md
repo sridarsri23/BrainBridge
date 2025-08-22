@@ -43,7 +43,7 @@ Base URL: `/api`
   - GET `/ai/cognitive-profile/{user_id}`
 
   - POST `/ai/demo-analyze/{assessment_id}`
-    - Demo analysis without persisting a profile. Response is sanitized to always include:
+    - Demo analysis without persisting a profile. If AI key is missing, returns a safe sample payload. Response includes where possible:
       - `personal_summary` (non-empty)
       - `workplace_accommodations` (>=3 items when possible)
       - `career_suggestions` (>=3 items when possible)
@@ -70,7 +70,7 @@ Base URL: `/api`
   - GET `/assessment/profile/{user_id}`
 
   - GET `/assessment/quiz-templates`
-    - Returns available templates including `work_env_matchmaker` and `micro_briefing_comprehension`.
+    - Returns available templates including `work_env_matchmaker`, `micro_briefing_comprehension`, and `sensory_profile_tolerance`.
 
   - POST `/auth/login`
 

@@ -18,6 +18,14 @@ All notable changes to this project will be documented in this file.
   - Frontend: New component `client/src/components/assessments/MicroBriefingComprehension.tsx` using `react-player`; wired into `self-discovery.tsx`.
   - Docs: Updated `docs/API_ROUTES.md` to document the endpoint and template.
 
+- Sensory Profile & Tolerance assessment:
+  - Frontend component: `client/src/components/assessments/SensoryProfileTolerance.tsx`
+  - Integrated in `client/src/pages/self-discovery.tsx`
+  - Backend template registered in `server/assessment_templates.py`
+  - Deterministic local scoring; optional AI summary via `/api/ai/demo-analyze/sensory_profile_tolerance`
+- Dependency: `@radix-ui/react-slider`
+- Docs: Updated `API_ROUTES.md`, `FRONTEND.md`, `SETUP.md`.
+
 ## [2025-08-22]
 - Initial documentation suite created under `docs/`:
   - ARCHITECTURE.md, SETUP.md, RUNBOOK.md, API_ROUTES.md, DATA_MODEL.md, FRONTEND.md, CHANGELOG.md

@@ -34,6 +34,24 @@ def get_comprehensive_assessments():
             ]
         },
         {
+            "quiz_id": "sensory_profile_tolerance",
+            "title": "🎚 Sensory Profile & Tolerance",
+            "description": "Likert sliders on light, noise, interruptions, texture, context switching plus checkboxes. Local deterministic scoring; optional AI summary.",
+            "activity_type": "sliders_checkboxes",
+            "estimated_time": 4,
+            "cdc_focus": ["sensory_processing", "attention_filtering"],
+            "questions": [
+                {"question_id": "light", "question_text": "Light sensitivity (1=low, 7=high)", "question_type": "likert", "min": 1, "max": 7, "cdc_targets": ["sensory_processing"]},
+                {"question_id": "noise", "question_text": "Noise sensitivity (1=low, 7=high)", "question_type": "likert", "min": 1, "max": 7, "cdc_targets": ["sensory_processing"]},
+                {"question_id": "interruptions", "question_text": "Sensitivity to interruptions (1=low, 7=high)", "question_type": "likert", "min": 1, "max": 7, "cdc_targets": ["attention_filtering"]},
+                {"question_id": "texture", "question_text": "Texture/tactile sensitivity (1=low, 7=high)", "question_type": "likert", "min": 1, "max": 7, "cdc_targets": ["sensory_processing"]},
+                {"question_id": "context_switching", "question_text": "Tolerance for context switching (1=low, 7=high)", "question_type": "likert", "min": 1, "max": 7, "cdc_targets": ["attention_filtering"]},
+                {"question_id": "headphones_ok", "question_text": "Headphones acceptable during work", "question_type": "checkbox", "cdc_targets": ["sensory_processing"]},
+                {"question_id": "prefers_dim_light", "question_text": "Prefers dim/indirect lighting", "question_type": "checkbox", "cdc_targets": ["sensory_processing"]},
+                {"question_id": "needs_breaks_when_overwhelmed", "question_text": "Needs short breaks when overwhelmed", "question_type": "checkbox", "cdc_targets": ["attention_filtering"]}
+            ]
+        },
+        {
             "quiz_id": "micro_briefing_comprehension",
             "title": "🎬 Micro-briefing Comprehension",
             "description": "Watch a short clip and answer open questions. AI grades clarity, detail, relevance.",

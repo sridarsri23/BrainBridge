@@ -43,6 +43,7 @@
   - user_id (FK users.id)
   - assessment_type, title, description, questions (JSON), scoring_config (JSON), cdc_mapping (JSON), is_active
   - created_at, updated_at
+  - Templates (quiz-templates) include: `work_env_matchmaker`, `micro_briefing_comprehension`, `sensory_profile_tolerance`, plus additional explorers (focus, pattern, communication, creative, processing)
 
 - __AssessmentResponse__ (`assessment_responses`)
   - response_id (str, PK)
