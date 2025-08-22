@@ -98,9 +98,9 @@ export default function AssessmentResults({
               <h3 className="font-semibold text-gray-800 mb-2">Your Responses Summary:</h3>
               <div className="grid gap-2 text-sm text-gray-600">
                 {Object.entries(responses).slice(0, 3).map(([key, value]) => (
-                  <div key={key} className="flex gap-2">
+                  <div key={key} className="flex gap-2 flex-wrap">
                     <span className="font-medium">{key}:</span>
-                    <span className="truncate">{value}</span>
+                    <span className="break-words whitespace-pre-wrap">{value}</span>
                   </div>
                 ))}
                 {responseCount > 3 && (
