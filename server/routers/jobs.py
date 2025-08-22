@@ -20,20 +20,14 @@ from server.auth import get_current_user
 
 router = APIRouter()
 
-@router.get("/", response_model=List[JobPostingResponse])
-async def get_active_jobs(db: Session = Depends(get_db)):
-    """Get all active job postings"""
-    jobs = db.query(JobPosting).filter(JobPosting.is_active == True).all()
-    return [JobPostingResponse.model_validate(job) for job in jobs]
-
-@router.post("/", response_model=JobPostingResponse)
+@router.post("", response_model=JobPostingResponse)  # Changed from "/" to ""
 async def create_job_posting(
     job_data: JobPostingCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create a new job posting (employer only)"""
-    if current_user.user_role.value not in ["Employer", "Admin", "Manager"]:
+    if current_user.user_role not in ["EMPLOYER", "ADMIN", "MANAGER"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only employers can create job postings"
@@ -56,7 +50,7 @@ async def get_employer_jobs(
     db: Session = Depends(get_db)
 ):
     """Get job postings for current employer"""
-    if current_user.user_role.value not in ["Employer", "Admin", "Manager"]:
+    if current_user.user_role not in ["EMPLOYER", "ADMIN", "MANAGER"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only employers can view their job postings"
@@ -96,7 +90,7 @@ async def update_job_posting(
     
     # Check if user is the employer who created this job or admin
     if (str(job.employer_id) != str(current_user.id) and 
-        current_user.user_role.value not in ["Admin", "Manager"]):
+        current_user.user_role not in ["ADMIN", "MANAGER"]):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to update this job posting"

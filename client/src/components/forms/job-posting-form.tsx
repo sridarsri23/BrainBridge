@@ -22,14 +22,18 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Update the schema to match backend with correct enum values
 const jobPostingSchema = z.object({
-  jobTitle: z.string().min(1, "Job title is required"),
-  jobDescription: z.string().min(10, "Job description must be at least 10 characters"),
-  requiredSkills: z.string().optional(),
+  job_title: z.string().min(1, "Job title is required"),
+  job_description: z.string().min(10, "Job description must be at least 10 characters"),
+  requirements: z.string().optional(),
   location: z.string().min(1, "Location is required"),
-  employmentType: z.enum(['Full-time', 'Part-time', 'Contract', 'Internship']),
-  jobBenefits: z.string().optional(),
-  applicationDeadline: z.string().optional(),
+  employment_type: z.enum(['Full-time', 'Part-time', 'Contract', 'Internship']),
+  work_setup: z.enum(['On-Site', 'Hybrid', 'Remote']), // Updated enum values
+  salary_range_min: z.number().min(0, "Minimum salary must be positive").optional(),
+  salary_range_max: z.number().min(0, "Maximum salary must be positive").optional(),
+  benefits: z.string().optional(),
+  application_deadline: z.string().optional(),
 });
 
 type JobPostingData = z.infer<typeof jobPostingSchema>;
@@ -63,13 +67,14 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
   const form = useForm<JobPostingData>({
     resolver: zodResolver(jobPostingSchema),
     defaultValues: {
-      jobTitle: "",
-      jobDescription: "",
-      requiredSkills: "",
+      job_title: "",
+      job_description: "",
+      requirements: "",
       location: "",
-      employmentType: "Full-time",
-      jobBenefits: "",
-      applicationDeadline: "",
+      employment_type: "Full-time",
+      work_setup: "On-Site", // Updated default value
+      benefits: "",
+      application_deadline: "",
     },
   });
 
@@ -111,7 +116,7 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
             <form className="space-y-6">
               <FormField
                 control={form.control}
-                name="jobTitle"
+                name="job_title"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Job Title *</FormLabel>
@@ -130,7 +135,7 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
               <div className="grid md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
-                  name="employmentType"
+                  name="employment_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Employment Type *</FormLabel>
@@ -154,6 +159,31 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
 
                 <FormField
                   control={form.control}
+                  name="work_setup"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Work Setup *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-work-setup">
+                            <SelectValue placeholder="Select work setup" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="On-Site">On-Site</SelectItem> {/* Updated value */}
+                          <SelectItem value="Hybrid">Hybrid</SelectItem>
+                          <SelectItem value="Remote">Remote</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
                   name="location"
                   render={({ field }) => (
                     <FormItem>
@@ -169,11 +199,71 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="application_deadline"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Application Deadline</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date"
+                          {...field} 
+                          data-testid="input-application-deadline"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="salary_range_min"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Salary ($)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          min="0"
+                          {...field}
+                          onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          data-testid="input-salary-min"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="salary_range_max"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Maximum Salary ($)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number"
+                          min="0"
+                          {...field}
+                          onChange={e => field.onChange(parseInt(e.target.value) || 0)}
+                          data-testid="input-salary-max"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
                 control={form.control}
-                name="jobDescription"
+                name="job_description"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Job Description *</FormLabel>
@@ -192,18 +282,17 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
 
               <FormField
                 control={form.control}
-                name="requiredSkills"
+                name="requirements"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Required Skills</FormLabel>
+                    <FormLabel>Requirements</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="e.g., Python, SQL, Data Analysis, Excel"
+                      <Textarea 
+                        placeholder="List the required skills, qualifications, and experience..."
                         {...field} 
-                        data-testid="input-required-skills"
+                        data-testid="textarea-requirements"
                       />
                     </FormControl>
-                    <p className="text-xs text-muted-foreground mt-1">Separate skills with commas</p>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -211,15 +300,15 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
 
               <FormField
                 control={form.control}
-                name="jobBenefits"
+                name="benefits"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Job Benefits</FormLabel>
+                    <FormLabel>Benefits</FormLabel>
                     <FormControl>
                       <Textarea 
                         placeholder="Describe the benefits, perks, and compensation..."
                         {...field} 
-                        data-testid="textarea-job-benefits"
+                        data-testid="textarea-benefits"
                       />
                     </FormControl>
                     <FormMessage />
@@ -231,7 +320,7 @@ export default function JobPostingForm({ onDataChange }: JobPostingFormProps) {
         </CardContent>
       </Card>
 
-      {/* Neuro-Inclusive Requirements */}
+      {/* Neuro-Inclusive Requirements - For UI purposes only */}
       <Card data-testid="card-cognitive-requirements">
         <CardHeader>
           <CardTitle>Cognitive Profile Preferences</CardTitle>
