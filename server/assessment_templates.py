@@ -34,6 +34,34 @@ def get_comprehensive_assessments():
             ]
         },
         {
+            "quiz_id": "micro_briefing_comprehension",
+            "title": "🎬 Micro-briefing Comprehension",
+            "description": "Watch a short clip and answer open questions. AI grades clarity, detail, relevance.",
+            "activity_type": "video_open_ended",
+            "estimated_time": 5,
+            "cdc_focus": ["verbal_communication", "communication_interpretation"],
+            "questions": [
+                {
+                    "question_id": "q1",
+                    "question_text": "Summarize the main point in 1-3 sentences.",
+                    "question_type": "open_text",
+                    "cdc_targets": ["verbal_communication"]
+                },
+                {
+                    "question_id": "q2",
+                    "question_text": "List 2-3 key details you noticed.",
+                    "question_type": "open_text",
+                    "cdc_targets": ["communication_interpretation"]
+                },
+                {
+                    "question_id": "q3",
+                    "question_text": "How would you apply this in a work setting?",
+                    "question_type": "open_text",
+                    "cdc_targets": ["verbal_communication", "executive_function"]
+                }
+            ]
+        },
+        {
             "quiz_id": "focus_attention_assessment",
             "title": "🎯 Focus & Attention Explorer",
             "description": "Discover your natural focus patterns and attention preferences through engaging scenarios",

@@ -17,6 +17,7 @@ import { CreativeExecutiveAssessment } from "@/components/assessments/CreativeEx
 import { ProcessingMotorAssessment } from "@/components/assessments/ProcessingMotorAssessment";
 import { MultitaskingSensoryAssessment } from "@/components/assessments/MultitaskingSensoryAssessment";
 import WorkEnvMatchmaker from "@/components/assessments/WorkEnvMatchmaker";
+import MicroBriefingComprehension from "@/components/assessments/MicroBriefingComprehension";
 
 interface Quiz {
   quiz_id: string;
@@ -29,6 +30,7 @@ interface Quiz {
 
 type AssessmentType = 
   | 'work_env_matchmaker'
+  | 'micro_briefing_comprehension'
   | 'focus_attention_assessment'
   | 'pattern_spatial_assessment'
   | 'communication_assessment'
@@ -53,6 +55,14 @@ export default function SelfDiscovery() {
       activity_type: 'gamified_selections',
       estimated_time: 6,
       cdc_focus: ['sensory_processing', 'attention_filtering', 'verbal_communication', 'executive_function']
+    },
+    {
+      quiz_id: 'micro_briefing_comprehension',
+      title: '🎬 Micro-briefing Comprehension',
+      description: 'Watch a short clip and answer open questions. AI grades clarity, detail, and relevance.',
+      activity_type: 'video_open_ended',
+      estimated_time: 5,
+      cdc_focus: ['verbal_communication', 'communication_interpretation']
     },
     {
       quiz_id: 'focus_attention_assessment',
@@ -213,6 +223,8 @@ export default function SelfDiscovery() {
     switch (selectedAssessment) {
       case 'work_env_matchmaker':
         return <WorkEnvMatchmaker {...commonProps} />;
+      case 'micro_briefing_comprehension':
+        return <MicroBriefingComprehension {...commonProps} />;
       case 'focus_attention_assessment':
         return <FocusAttentionAssessment {...commonProps} />;
       case 'pattern_spatial_assessment':

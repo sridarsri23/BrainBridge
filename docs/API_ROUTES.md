@@ -16,6 +16,29 @@ Base URL: `/api`
 
   - POST `/ai/analyze-assessment/{assessment_id}`
     - Runs full AI analysis for a saved assessment. Requires valid AI key.
+  - POST `/ai/grade-open-ended`
+    - Grades open-ended answers (optionally tied to a video) and returns rubric-based scores.
+    - Request body:
+      ```json
+      {
+        "video_url": "https://...", // optional
+        "answers": { "q1": "...", "q2": "...", "q3": "..." },
+        "user_context": { "demo_mode": true }
+      }
+      ```
+    - Response body (example):
+      ```json
+      {
+        "success": true,
+        "grading": {
+          "per_question": {
+            "q1": { "clarity": 82, "detail": 78, "relevance": 88, "rationale": "..." }
+          },
+          "overall": { "clarity": 80, "detail": 79, "relevance": 86, "rationale": "..." },
+          "model_used": "gpt-4o"
+        }
+      }
+      ```
 
   - GET `/ai/cognitive-profile/{user_id}`
 
@@ -47,7 +70,7 @@ Base URL: `/api`
   - GET `/assessment/profile/{user_id}`
 
   - GET `/assessment/quiz-templates`
-    - Returns available templates including `work_env_matchmaker`.
+    - Returns available templates including `work_env_matchmaker` and `micro_briefing_comprehension`.
 
   - POST `/auth/login`
 

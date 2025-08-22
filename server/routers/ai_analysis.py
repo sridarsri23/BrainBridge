@@ -34,7 +34,6 @@ async def demo_analyze_assessment(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="No assessment responses provided"
             )
-        
         # User context for demo
         user_context = request_data.get("user_context", {})
         user_context.update({
@@ -110,6 +109,31 @@ async def demo_analyze_assessment(
             },
             "message": "Demo analysis completed (using sample data due to API configuration)"
         }
+
+@router.post("/grade-open-ended")
+async def grade_open_ended_endpoint(request_data: Dict[str, Any]):
+    """Grade open-ended responses with optional video URL and user context using the analyzer.
+
+    Body:
+    {
+      "video_url": "https://...",   # optional
+      "answers": { "q1": "...", "q2": "...", "q3": "..." },
+      "user_context": { ... }        # optional
+    }
+    """
+    try:
+        video_url = request_data.get("video_url")
+        answers = request_data.get("answers") or request_data.get("responses") or {}
+        if not isinstance(answers, dict) or not answers:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="answers must be a non-empty object")
+        user_context = request_data.get("user_context") or {"demo_mode": True}
+        result = assessment_analyzer.grade_open_ended(video_url=video_url, qa=answers, user_context=user_context)
+        return {"success": True, "grading": result}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"grade_open_ended error: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="grading_failed")
 
 @router.post("/analyze-assessment/{assessment_id}")
 async def analyze_assessment_with_ai(
