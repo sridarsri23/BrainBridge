@@ -2,6 +2,10 @@
 
 echo "Starting BrainBridge application..."
 
+# Run debug script first
+echo "Running debug script..."
+python railway-debug.py
+
 # Check if we're in the right directory
 echo "Current directory: $(pwd)"
 echo "Files in current directory:"
