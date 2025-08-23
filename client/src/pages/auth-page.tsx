@@ -164,7 +164,7 @@ export default function AuthPage() {
     mutationFn: async (data: Omit<EmployerRegisterForm, "confirmPassword">) => {
       const registerData = {
         ...data,
-        userRole: "Employer"
+        userRole: "EMPLOYER"
       };
       const response = await apiRequest("POST", "/api/register", registerData);
       return response.json();
@@ -190,7 +190,7 @@ export default function AuthPage() {
     mutationFn: async (data: Omit<NDAdultRegisterForm, "confirmPassword">) => {
       const registerData = {
         ...data,
-        userRole: "ND_Adult"
+        userRole: "ND_ADULT"
       };
       const response = await apiRequest("POST", "/api/register", registerData);
       return response.json();
@@ -216,7 +216,7 @@ export default function AuthPage() {
     mutationFn: async (data: Omit<GuardianRegisterForm, "confirmPassword">) => {
       const registerData = {
         ...data,
-        userRole: "Guardian"
+        userRole: "GUARDIAN"
       };
       const response = await apiRequest("POST", "/api/register", registerData);
       return response.json();

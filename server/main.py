@@ -7,16 +7,14 @@ from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.exceptions import RequestValidationError
 from contextlib import asynccontextmanager
 import uvicorn
 import os
-from typing import Dict, Any, Optional
 
 from server.database import init_db, get_db
-from server.models import UserRole, User
-from server.auth import verify_token, get_current_user
+from server.models import User
+from server.auth import get_current_user
 from server.routers import auth, users, jobs, admin
 from sqlalchemy.orm import Session
 
@@ -67,9 +65,10 @@ app.include_router(users.router, prefix="/api/users", tags=["users"])
 app.include_router(jobs.router, prefix="/api/jobs", tags=["jobs"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
 # Assessment and Self-Discovery routes
-from server.routers import assessment, ai_analysis
+from server.routers import assessment, ai_analysis, job_normalization
 app.include_router(assessment.router, prefix="/api/assessment", tags=["assessment"])
 app.include_router(ai_analysis.router, prefix="/api/ai", tags=["ai-analysis"])
+app.include_router(job_normalization.router, prefix="/api/jobs", tags=["job-normalization"])
 # Removed employer_profiles router - all data now in users table
 
 # Additional route aliases for frontend compatibility
@@ -251,49 +250,6 @@ async def update_user_profile(profile_data: dict, current_user: User = Depends(g
         print(f"Profile update error: {error_msg}")
         raise HTTPException(status_code=500, detail=error_msg)
 
-@app.get("/api/matches")
-async def get_job_matches(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Get job matches for current user"""
-    # Create some sample matches for now since we don't have the full matching algorithm
-    matches = [
-        {
-            "matchId": "1",
-            "jobTitle": "Frontend Developer", 
-            "companyName": "TechCorp Inc",
-            "location": "Remote",
-            "employmentType": "Full-time",
-            "matchScore": 95,
-            "matchReasons": ["React expertise", "Accessibility focus", "Remote-friendly"],
-            "salary": "$75,000 - $90,000",
-            "description": "Join our inclusive tech team building accessible web applications.",
-            "tags": ["React", "TypeScript", "Accessibility", "Remote"]
-        },
-        {
-            "matchId": "2", 
-            "jobTitle": "Data Analyst",
-            "companyName": "DataFlow Solutions",
-            "location": "New York, NY",
-            "employmentType": "Full-time", 
-            "matchScore": 88,
-            "matchReasons": ["Detail-oriented", "Pattern recognition", "Structured work"],
-            "salary": "$65,000 - $80,000",
-            "description": "Analyze data patterns and create insights for business decisions.",
-            "tags": ["Python", "SQL", "Analytics", "Flexible Schedule"]
-        },
-        {
-            "matchId": "3",
-            "jobTitle": "UX Designer",
-            "companyName": "Design Forward",
-            "location": "San Francisco, CA", 
-            "employmentType": "Contract",
-            "matchScore": 82,
-            "matchReasons": ["User empathy", "Systematic thinking", "Creative problem-solving"],
-            "salary": "$60 - $80/hour",
-            "description": "Design inclusive user experiences for diverse audiences.",
-            "tags": ["Figma", "User Research", "Accessibility", "Inclusive Design"]
-        }
-    ]
-    return matches
 
 # Health check endpoint
 @app.get("/api/health")

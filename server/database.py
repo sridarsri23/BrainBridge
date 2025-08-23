@@ -37,11 +37,17 @@ def init_db():
     Base.metadata.create_all(bind=engine)
     # Non-destructive migration: ensure new columns exist on existing DBs
     try:
-        from sqlalchemy import text
-        with engine.begin() as conn:
-            # users table: add location and availability_status if missing
-            conn.execute(text("ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS location VARCHAR"))
-            conn.execute(text("ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS availability_status VARCHAR"))
+        from sqlalchemy import text, inspect
+        inspector = inspect(engine)
+        
+        # Check if users table exists and add columns if missing
+        if inspector.has_table('users'):
+            columns = [col['name'] for col in inspector.get_columns('users')]
+            with engine.begin() as conn:
+                if 'location' not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN location VARCHAR"))
+                if 'availability_status' not in columns:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN availability_status VARCHAR"))
     except Exception as e:
         # Log but don't crash app startup
         print(f"Warning: init_db migration step failed: {e}")
