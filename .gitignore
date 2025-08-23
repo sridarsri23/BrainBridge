@@ -63,4 +63,4 @@ vite.config.ts.*
 cookies.txt
 
 # Local tool configs
-.config/
+.config/.env

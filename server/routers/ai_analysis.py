@@ -12,7 +12,6 @@ import json
 from server.database import get_db
 from server.models import User, AssessmentResponse
 from server.auth import get_current_user
-from server.openai_integration import assessment_analyzer
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

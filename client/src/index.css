@@ -7,7 +7,6 @@
 @import './components/forms/form-components.css';
 @import './components/admin/verification-queue.css';
 @import './components/traits/traits-selection.css';
-@import './components/ObjectUploader.css';
 
 @tailwind base;
 @tailwind components;
@@ -121,11 +120,15 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 
   .reduce-motion {
