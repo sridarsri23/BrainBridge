@@ -2,10 +2,16 @@
 
 ## Railway Deployment Steps
 
-### 1. Initial Setup
+### Option 1: Nixpacks (Recommended)
 1. Go to [railway.app](https://railway.app) and sign up
 2. Connect your GitHub repository
-3. Railway will auto-detect the project structure
+3. Railway will auto-detect the project structure using nixpacks
+
+### Option 2: Docker (Alternative)
+If nixpacks fails, Railway can also use the Dockerfile:
+1. In Railway dashboard, go to your service settings
+2. Under "Build & Deploy", select "Dockerfile" as the build method
+3. Railway will use the provided Dockerfile
 
 ### 2. Add PostgreSQL Database
 1. In your Railway project dashboard, click "New Service"
@@ -35,6 +41,11 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 ### Issue: "uvicorn: command not found"
 **Solution**: The configuration files have been updated to use `python -m uvicorn` instead of just `uvicorn`.
 
+### Issue: Nixpacks build fails with "undefined variable 'npm'"
+**Solution**: 
+1. Try using the Dockerfile instead: In Railway dashboard → Service Settings → Build & Deploy → Select "Dockerfile"
+2. Or try the simplified nixpacks configuration in `.nixpacks` file
+
 ### Issue: Database connection fails
 **Solution**: 
 1. Make sure `DATABASE_URL` is set correctly
@@ -59,7 +70,9 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 - `Procfile` - Tells Railway how to start the app
 - `runtime.txt` - Specifies Python version
 - `railway.json` - Railway-specific configuration
-- `nixpacks.toml` - Build configuration
+- `nixpacks.toml` - Build configuration (Nixpacks)
+- `.nixpacks` - Alternative build configuration
+- `Dockerfile` - Docker-based deployment
 - `wsgi.py` - Alternative entry point
 
 ## Health Check
