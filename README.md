@@ -1,41 +1,132 @@
-# 🧠 BrainBridge
+# BrainBridge Presentation Website
 
-**BrainBridge** is a production-grade platform designed to bridge neurodiverse talent with organizations seeking specialized skills.  
-It provides AI-driven task matching, and inclusion-focused analytics to empower companies and individuals alike.
+A modern, interactive presentation website for the BrainBridge project, built with React, TypeScript, Vite, and Framer Motion.
 
----
+## Features
 
-## 🚀 Features
+- 🎨 Modern, responsive design with dark theme
+- ✨ Smooth animations and transitions using Framer Motion
+- 🖱️ Interactive sections with scroll-based animations
+- ⌨️ Keyboard navigation support (↑/↓ arrows)
+- 📱 Mobile-friendly navigation menu
+- 🚀 Optimized for performance
 
-- **AI-Powered Task Matching** – Matches neurodiverse professionals with suitable tasks/projects.
-- **Inclusive Workforce Analytics** – Visualize inclusion metrics and progress over time.
-- **Secure Role-Based Access Control** – Fine-grained permissions for admins, recruiters, and candidates.
-- **Responsive UI** – Accessible, mobile-friendly design built with Tailwind CSS.
-- **Scalable Backend** – Modular and API-first architecture
-- **Assessments** – Self-discovery suite including:
-  - 🎬 Micro-briefing Comprehension (video + open-ended grading)
-  - 🎚 Sensory Profile & Tolerance (Likert sliders + checkboxes; optional AI summary)
+## Getting Started
 
----
+### Prerequisites
 
-## 📚 Documentation
+- Node.js 16+ and npm/yarn/pnpm
 
-- Architecture: `docs/ARCHITECTURE.md`
-- Setup: `docs/SETUP.md`
-- Runbook: `docs/RUNBOOK.md`
-- API Routes: `docs/API_ROUTES.md`
-- Data Model: `docs/DATA_MODEL.md`
-- Frontend: `docs/FRONTEND.md`
-- Changelog: `docs/CHANGELOG.md`
- 
-Key endpoints for assessments:
-- `POST /api/ai/grade-open-ended` – rubric-grade open responses
-- `POST /api/ai/demo-analyze/{assessment_id}` – optional AI summary (demo-safe)
+### Installation
 
-Regenerate API routes doc:
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn
+   # or
+   pnpm install
+   ```
+3. Install additional dependencies:
+   ```bash
+   npm install framer-motion react-icons @types/node
+   ```
+
+### Development
+
+Start the development server:
 
 ```bash
-npm run docs:api
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
 ```
 
-Update docs when you change code or fix bugs. Log notable changes in `docs/CHANGELOG.md`.
+### Building for Production
+
+```bash
+npm run build
+# or
+yarn build
+# or
+pnpm build
+```
+
+## Project Structure
+
+- `/src/components/sections` - Individual page sections
+- `/src/App.tsx` - Main application component with routing and layout
+- `/src/index.css` - Global styles and Tailwind configuration
+- `/tailwind.config.js` - Tailwind CSS configuration
+
+## Technologies Used
+
+- ⚛️ React 18
+- 📝 TypeScript
+- ⚡ Vite
+- 🎨 Tailwind CSS
+- ✨ Framer Motion
+- 🌟 React Icons
+
+## Deployment
+
+This project is configured for deployment on GitHub Pages. To deploy:
+
+1. Build the project: `npm run build`
+2. Deploy to GitHub Pages: `npm run deploy`
+
+## License
+
+MIT
+
+      // Remove tseslint.configs.recommended and replace with this
+      ...tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      ...tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      ...tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```

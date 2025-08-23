@@ -1,66 +1,117 @@
-node_modules
-venv/
-
-# Node
-node_modules/
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
-*.log
+lerna-debug.log*
 
-# Build outputs
-dist/
-client/dist/
-dist/public/
-build/
+node_modules
+dist
+dist-ssr
+*.local
 
-# TypeScript
-*.tsbuildinfo
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Vite cache
-client/.vite/
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# Python
-.venv/
-venv/
-__pycache__/
-**/__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.egg-info/
-.eggs/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-.coverage.*
-.cache/
-server/__pycache__*/
+# Testing
+/coverage
 
-# OS
+# Production
+/dist
+/dist-ssr
+/build
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# System Files
 .DS_Store
 Thumbs.db
 
-# Editors/IDE
-.vscode/
-.idea/
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Local project
-.local/
-
-# Public server dir (not used for source)
-server/public
+# Cache
+.cache/
+.temp/
+.tmp/
 
 # Misc
-vite.config.ts.*
-*.tar.gz
-cookies.txt
+.vercel
+.netlify
+.svelte-kit
+.astro
 
-# Local tool configs
-.config/
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+.env.production
+
+# parcel-bundler cache (https://parceljs.org/)
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test

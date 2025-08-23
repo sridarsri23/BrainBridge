@@ -1,37 +1,37 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
-import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== "production" &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import("@replit/vite-plugin-cartographer").then((m) =>
-            m.cartographer(),
-          ),
-        ]
-      : []),
-  ],
+  plugins: [react()],
+  base: process.env.NODE_ENV === 'production' ? '/BrainBridge/' : '/',
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      '@': resolve(__dirname, './src'),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
-    emptyOutDir: true,
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: process.env.NODE_ENV !== 'production',
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          framer: ['framer-motion'],
+          icons: ['react-icons'],
+        },
+      },
+    },
   },
   server: {
-    fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
+    port: 3000,
+    open: true,
+  },
+  preview: {
+    port: 3000,
+    open: true,
   },
 });
