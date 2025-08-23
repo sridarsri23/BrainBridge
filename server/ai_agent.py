@@ -179,7 +179,7 @@ Return as valid JSON only.""")
             
         try:
             self.llm = ChatOpenAI(
-                model="gpt-4o",
+                model="gpt-5",
                 temperature=0.3,
                 base_url="https://api.aimlapi.com/v1",
                 api_key=self.api_key,
