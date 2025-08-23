@@ -85,6 +85,9 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 1. Make sure `DATABASE_URL` is set correctly
 2. Check that the PostgreSQL service is running
 3. Verify the database URL format: `postgresql://user:pass@host:port/dbname`
+4. **Railway DATABASE_URL fix**: The code now automatically converts `postgres://` to `postgresql://`
+5. **Database tables**: The app will automatically create tables on startup
+6. **Test connection**: Use `python test_db_connection.py` to test database connectivity
 
 ### Issue: Frontend not building
 **Solution**:

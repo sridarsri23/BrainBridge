@@ -56,15 +56,7 @@ def init_database():
         # Create all tables
         logger.info("Creating database tables...")
         try:
-            with engine.begin() as connection:
-                # Create schema if not exists
-                connection.execute(text("CREATE SCHEMA IF NOT EXISTS public;"))
-                
-                # Grant all privileges on schema to brainbridge user
-                connection.execute(text("GRANT ALL ON SCHEMA public TO brainbridge;"))
-                connection.execute(text("GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO brainbridge;"))
-                
-            # Create all tables
+            # Create all tables using SQLAlchemy
             Base.metadata.create_all(bind=engine)
             
             # Verify tables were created

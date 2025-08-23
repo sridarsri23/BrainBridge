@@ -26,10 +26,10 @@ async def lifespan(app: FastAPI):
     # Startup
     try:
         print("Starting BrainBridge API...")
-        # Make database init non-blocking for faster startup
-        import asyncio
-        asyncio.create_task(asyncio.to_thread(init_db))
-        print("Database initialization started (non-blocking)")
+        # Initialize database synchronously to ensure tables exist
+        print("Initializing database...")
+        init_db()
+        print("Database initialized successfully")
     except Exception as e:
         print(f"Warning: Database initialization failed: {e}")
         # Don't crash the app if DB init fails
