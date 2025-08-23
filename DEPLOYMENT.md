@@ -60,6 +60,13 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 3. Try the no-healthcheck configuration if needed
 4. Check Railway logs for health check attempts
 
+### Issue: Health check timing - server not ready when Railway checks
+**Solution**:
+1. **Extended health check timeout** - Increased to 120 seconds with 30-second intervals
+2. **Made database init non-blocking** - Faster startup, database init runs in background
+3. **Simplified health check** - No database dependencies, returns immediately
+4. **Alternative: Use `railway-no-healthcheck.json`** - If timing issues persist, rename to `railway.json`
+
 ### Issue: "Invalid value for '--port': '$PORT' is not a valid integer"
 **Solution**: 
 1. The startup script now properly handles the PORT environment variable

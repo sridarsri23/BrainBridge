@@ -26,8 +26,10 @@ async def lifespan(app: FastAPI):
     # Startup
     try:
         print("Starting BrainBridge API...")
-        init_db()
-        print("Database initialized successfully")
+        # Make database init non-blocking for faster startup
+        import asyncio
+        asyncio.create_task(asyncio.to_thread(init_db))
+        print("Database initialization started (non-blocking)")
     except Exception as e:
         print(f"Warning: Database initialization failed: {e}")
         # Don't crash the app if DB init fails
@@ -301,29 +303,17 @@ async def get_job_matches(current_user: User = Depends(get_current_user), db: Se
     ]
     return matches
 
-# Health check endpoint
+# Health check endpoint - simple and fast
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
+    """Health check endpoint - simple and fast"""
     print("Health check endpoint called")
-    try:
-        # Basic health check - just return success
-        response = {
-            "status": "healthy", 
-            "service": "BrainBridge API",
-            "timestamp": "2024-01-01T00:00:00Z",
-            "message": "Server is running"
-        }
-        print(f"Health check response: {response}")
-        return response
-    except Exception as e:
-        # Even if there's an error, return a basic response
-        print(f"Health check error: {e}")
-        return {
-            "status": "degraded",
-            "service": "BrainBridge API", 
-            "error": str(e)
-        }
+    # Return immediately without any database or complex operations
+    return {
+        "status": "healthy", 
+        "service": "BrainBridge API",
+        "message": "Server is running"
+    }
 
 # Root API endpoint (only for direct API access)
 @app.get("/api/")
