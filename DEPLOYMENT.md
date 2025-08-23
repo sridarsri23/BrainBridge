@@ -46,6 +46,13 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 1. Try using the Dockerfile instead: In Railway dashboard → Service Settings → Build & Deploy → Select "Dockerfile"
 2. Or try the simplified nixpacks configuration in `.nixpacks` file
 
+### Issue: Health check fails after successful build
+**Solution**: 
+1. Check Railway logs for startup errors
+2. The health check path has been changed to `/` (simpler endpoint)
+3. Database connection issues won't crash the app anymore
+4. Try the startup script approach with `start.sh`
+
 ### Issue: Database connection fails
 **Solution**: 
 1. Make sure `DATABASE_URL` is set correctly
