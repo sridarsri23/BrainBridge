@@ -35,4 +35,5 @@ if [ ! -d "dist" ] && [ ! -d "client/dist" ]; then
 fi
 
 echo "Starting FastAPI server..."
-python -m uvicorn server.main:app --host 0.0.0.0 --port $PORT --log-level info
+echo "PORT environment variable: $PORT"
+python -m uvicorn server.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level info

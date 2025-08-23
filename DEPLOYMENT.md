@@ -51,7 +51,13 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 1. Check Railway logs for startup errors
 2. The health check path has been changed to `/` (simpler endpoint)
 3. Database connection issues won't crash the app anymore
-4. Try the startup script approach with `start.sh`
+4. The PORT environment variable issue has been fixed with `start_server.py`
+
+### Issue: "Invalid value for '--port': '$PORT' is not a valid integer"
+**Solution**: 
+1. The startup script now properly handles the PORT environment variable
+2. Uses `start_server.py` which correctly reads the PORT from environment
+3. Falls back to port 8000 if PORT is not set
 
 ### Issue: Database connection fails
 **Solution**: 
@@ -80,6 +86,8 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 - `nixpacks.toml` - Build configuration (Nixpacks)
 - `.nixpacks` - Alternative build configuration
 - `Dockerfile` - Docker-based deployment
+- `start_server.py` - Python startup script with proper PORT handling
+- `railway-debug.py` - Debug script for troubleshooting
 - `wsgi.py` - Alternative entry point
 
 ## Health Check
