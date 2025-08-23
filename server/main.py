@@ -305,15 +305,20 @@ async def get_job_matches(current_user: User = Depends(get_current_user), db: Se
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint"""
+    print("Health check endpoint called")
     try:
         # Basic health check - just return success
-        return {
+        response = {
             "status": "healthy", 
             "service": "BrainBridge API",
-            "timestamp": "2024-01-01T00:00:00Z"
+            "timestamp": "2024-01-01T00:00:00Z",
+            "message": "Server is running"
         }
+        print(f"Health check response: {response}")
+        return response
     except Exception as e:
         # Even if there's an error, return a basic response
+        print(f"Health check error: {e}")
         return {
             "status": "degraded",
             "service": "BrainBridge API", 

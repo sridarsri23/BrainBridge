@@ -48,10 +48,17 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 
 ### Issue: Health check fails after successful build
 **Solution**: 
-1. Check Railway logs for startup errors
-2. The health check path has been changed to `/` (simpler endpoint)
-3. Database connection issues won't crash the app anymore
-4. The PORT environment variable issue has been fixed with `start_server.py`
+1. **Removed conflicting `railway.toml`** - This was causing configuration conflicts
+2. **Updated health check timeout** - Reduced to 60 seconds with 10-second intervals
+3. **Added health check debugging** - The endpoint now logs when called
+4. **Alternative: Use `railway-no-healthcheck.json`** - If health checks still fail, rename this to `railway.json`
+
+### Issue: Server starts but Railway can't reach health endpoint
+**Solution**:
+1. Check if Railway is using the correct configuration file
+2. Verify the health endpoint is accessible at `/api/health`
+3. Try the no-healthcheck configuration if needed
+4. Check Railway logs for health check attempts
 
 ### Issue: "Invalid value for '--port': '$PORT' is not a valid integer"
 **Solution**: 
