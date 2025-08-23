@@ -63,7 +63,6 @@ def init_db():
         
         # Non-destructive migration: ensure new columns exist on existing DBs
         try:
-            from sqlalchemy import text
             with engine.begin() as conn:
                 # users table: add location and availability_status if missing
                 conn.execute(text("ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS location VARCHAR"))
