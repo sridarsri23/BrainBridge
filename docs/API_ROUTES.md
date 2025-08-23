@@ -35,7 +35,7 @@ Base URL: `/api`
             "q1": { "clarity": 82, "detail": 78, "relevance": 88, "rationale": "..." }
           },
           "overall": { "clarity": 80, "detail": 79, "relevance": 86, "rationale": "..." },
-          "model_used": "gpt-4o"
+          "model_used": "gpt-5"
         }
       }
       ```

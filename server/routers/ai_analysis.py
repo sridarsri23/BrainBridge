@@ -1,6 +1,6 @@
 """
 AI-powered assessment analysis endpoints
-Enhanced with OpenAI GPT-4o integration
+Enhanced with OpenAI GPT-5 integration
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -41,7 +41,7 @@ async def demo_analyze_assessment(
             "assessment_id": assessment_id
         })
         
-        # Get AI analysis using GPT-4o
+        # Get AI analysis using 
         ai_analysis = assessment_analyzer.analyze_assessment_responses(
             responses=response_data,
             assessment_type=assessment_id,
@@ -104,7 +104,7 @@ async def demo_analyze_assessment(
                 "confidence_score": 0.85,
                 "summary": "Your cognitive profile shows strong analytical thinking and sustained attention abilities. You thrive in structured environments with clear expectations and minimal distractions.",
                 "analysis_timestamp": "2025-08-21T10:30:00Z",
-                "model_used": "gpt-4o",
+                "model_used": "gpt-5",
                 "demo_mode": True
             },
             "message": "Demo analysis completed (using sample data due to API configuration)"
@@ -143,7 +143,7 @@ async def analyze_assessment_with_ai(
     db: Session = Depends(get_db)
 ):
     """
-    Analyze assessment responses using GPT-4o for personalized insights
+    Analyze assessment responses using GPT-5 for personalized insights
     """
     try:
         # Get responses from request body (for demo) or database
@@ -176,7 +176,7 @@ async def analyze_assessment_with_ai(
             "response_count": len(response_data)
         }
         
-        # Get AI analysis using GPT-4o
+        # Get AI analysis using GPT-5
         ai_analysis = assessment_analyzer.analyze_assessment_responses(
             responses=response_data,
             assessment_type=assessment_id,
