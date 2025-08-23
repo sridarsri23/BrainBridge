@@ -65,7 +65,7 @@ class JobNormalizationAgent:
             
         try:
             self.llm = ChatOpenAI(
-                model="gpt-3.5-turbo",  # Using GPT-3.5-turbo which doesn't require verification
+                model="gpt-5",  # Using GPT-5-turbo which doesn't require verification
                 temperature=0.2,  # Low temperature for consistent analysis
                 base_url="https://api.aimlapi.com/v1",
                 api_key=self.api_key,
