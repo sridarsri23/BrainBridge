@@ -59,6 +59,13 @@ SECRET_KEY=your_secret_key_for_jwt_tokens
 2. Uses `start_server.py` which correctly reads the PORT from environment
 3. Falls back to port 8000 if PORT is not set
 
+### Issue: Only backend running, no frontend
+**Solution**: 
+1. Frontend build process has been improved with better error handling
+2. Static file serving now includes debugging information
+3. The app will serve frontend if built, or fallback to API response
+4. Check Railway logs for frontend build status
+
 ### Issue: Database connection fails
 **Solution**: 
 1. Make sure `DATABASE_URL` is set correctly

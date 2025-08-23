@@ -9,7 +9,9 @@ cmds = [
 
 [phases.build]
 cmds = [
-  "npm run build"
+  "npm run build",
+  "ls -la dist/ || echo 'dist not found'",
+  "ls -la dist/public/ || echo 'dist/public not found'"
 ]
 
 [start]
