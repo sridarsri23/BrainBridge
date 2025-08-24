@@ -1,5 +1,9 @@
 # Data Model (SQLAlchemy)
 
+- __Naming Conventions__
+  - Database columns and API responses use snake_case (e.g., `job_id`, `is_active`).
+  - Frontend may use camelCase internally but must map to/from snake_case when calling the API.
+
 - __User__ (`users`)
   - id (str, PK)
   - email (str, unique)
@@ -9,6 +13,7 @@
   - ND fields: date_of_birth, guardian_email, accommodation_needs, relationship, nd_adult_email
   - Identity & Medical: identity_verification_doc, has_neuro_condition_recognized, recognized_neuro_condition, nd_condition_proof_docs, medical_conditions
   - Work prefs: location, preferred_work_environment, preferred_work_setup, availability_status, notes
+    - Matching: if a `CognitiveProfile` is missing, `preferred_work_setup` is used to align preview match scores with remote/on-site signals in job text.
   - Consents: public_profile_consent, privacy_agreed
   - created_at, updated_at, is_active
 
@@ -58,6 +63,7 @@
   - profile_id (str, PK), user_id (FK users.id, unique)
   - strengths (floats): focus_sustained_attention, pattern_recognition, verbal_communication, spatial_reasoning, creative_ideation, multitasking_context_switching, processing_speed, executive_function, fine_motor_input, sensory_processing, communication_interpretation, attention_filtering
   - sensitivities (JSON), preferences (JSON)
+    - Matching: when present, CDC strengths and preferences/sensitivities drive job-specific scoring.
   - embedding_vector (str), evidence_sources (JSON), confidence_score (float), last_updated
 
 - __AuditLog__ (`audit_logs`)

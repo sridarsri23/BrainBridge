@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function MicroBriefingComprehension({ onComplete, onBack }: Props) {
-  const [videoUrl, setVideoUrl] = useState<string>('https://www.w3schools.com/html/mov_bbb.mp4');
+  const [videoUrl, setVideoUrl] = useState<string>('https://youtu.be/wENihRw0-DE');
   const [answers, setAnswers] = useState<Record<string, string>>({ q1: '', q2: '', q3: '' });
   const [submitting, setSubmitting] = useState(false);
   const [grading, setGrading] = useState<any>(null);
