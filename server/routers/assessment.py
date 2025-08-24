@@ -18,7 +18,6 @@ from server.schemas import (
 )
 from server.auth import get_current_user
 from server.ai_agent import agent
-from server.openai_integration import assessment_analyzer
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

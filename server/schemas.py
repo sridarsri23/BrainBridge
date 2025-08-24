@@ -134,7 +134,17 @@ class JobPostingBase(BaseModel):
 class JobPostingCreate(JobPostingBase):
     pass
 
-class JobPostingUpdate(JobPostingBase):
+class JobPostingUpdate(BaseModel):
+    job_title: Optional[str] = None
+    job_description: Optional[str] = None
+    employment_type: Optional[EmploymentType] = None
+    location: Optional[str] = None
+    work_setup: Optional[WorkSetup] = None
+    salary_range_min: Optional[int] = None
+    salary_range_max: Optional[int] = None
+    requirements: Optional[str] = None
+    benefits: Optional[str] = None
+    application_deadline: Optional[date] = None
     is_active: Optional[bool] = None
 
 class JobPostingResponse(JobPostingBase):

@@ -1,8 +1,9 @@
 # Runbook
 
 - __Dev start__
-  - `python3 run.py`
-  - Stops: Ctrl+C (script cleans up both servers)
+  - Option A (Python orchestrator): `python3 run.py`
+    - Stops: Ctrl+C (script cleans up both servers)
+  - Option B (Node bridge): `npm run dev` (run from repo root)
 
 - __Backend only__
   - `python3 run_fastapi.py`
@@ -10,7 +11,7 @@
   - AI: set `AIML_API_KEY` to enable full AI features. Without it, server runs in limited/demo mode and skips persistent LLM chains.
 
 - __Frontend only__
-  - `npm run dev` in `client/`
+  - Vite served via orchestrators above. If needed, run `vite` dev from `client/` manually.
 
 - __Logs & Debug__
   - FastAPI: console logs. Validation handled in `server/main.py` with a custom handler.
@@ -25,5 +26,5 @@
   - Assessments: If POSTing to `/api/assessment/assessments/{assessment_id}/respond` for a known template (e.g., `work_env_matchmaker`) and no instance exists, backend auto-creates from templates.
 
 - __Production__
-  - Build frontend: `npm run build` (root) -> outputs `client/dist`
-  - Start backend: `python3 run_fastapi.py` (serves SPA if `client/dist` exists)
+  - Build frontend: `npm run build` (root) -> outputs to `dist/public`
+  - Start server: `npm start` (Node bridge serves `dist/public` and runs FastAPI)

@@ -49,7 +49,7 @@ async def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
         "user": UserResponse.model_validate(user)
     }
 
-@router.post("/register", response_model=UserResponse)
+@router.post("/register", response_model=Token)
 async def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     # Log raw request body to see what FastAPI receives
     body = await request.body()
@@ -100,16 +100,20 @@ async def register(request: Request, user_data: UserCreate, db: Session = Depend
     db.commit()
     
     # Return simple success response
-    return UserResponse(
-        id=str(uuid.uuid4()),
-        email=user_data.email,
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        user_role=user_data.user_role,
-        phone=user_data.phone,
-        is_active=True,
-        created_at=datetime.now()
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": db_user.email}, expires_delta=access_token_expires
     )
+    
+    # Convert user to response model
+    user_response = UserResponse.model_validate(db_user)
+    
+    # Return response matching Token schema
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": user_response
+    }
 
 @router.get("/user", response_model=UserResponse)
 async def get_current_user_info(current_user: User = Depends(get_current_user)):

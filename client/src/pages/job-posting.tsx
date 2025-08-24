@@ -18,7 +18,9 @@ import { Link } from "wouter";
 export default function JobPosting() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
-  const [jobData, setJobData] = useState({});
+  const [jobData, setJobData] = useState<any>({});
+  const [normalizedJob, setNormalizedJob] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -40,32 +42,71 @@ export default function JobPosting() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Job posting created successfully!",
+        title: "Job posted successfully",
+        description: "Your job posting has been created and is now live.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/jobs/employer"] });
-      // Redirect to employer dashboard
-      window.location.href = "/";
+      queryClient.invalidateQueries({ queryKey: ["/api/jobs"] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: "Session expired",
+          description: "Please log in again to continue.",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to create job posting. Please try again.",
+        title: "Failed to create job posting",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
+
+  const analyzeJobMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/jobs/normalize", data);
+      return await response.json();
+    },
+    onSuccess: (result) => {
+      setNormalizedJob(result.data);
+      toast({
+        title: "Analysis Complete",
+        description: "Job description has been normalized for ND matching.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Analysis Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAnalyzeJob = async () => {
+    if (!jobData.job_title || !jobData.job_description) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in job title and description before analyzing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    try {
+      await analyzeJobMutation.mutateAsync({
+        job_title: jobData.job_title,
+        job_description: jobData.job_description,
+        company_name: jobData.company || "",
+        additional_context: jobData.requirements || ""
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const handlePublishJob = () => {
     createJobMutation.mutate(jobData);
@@ -147,28 +188,65 @@ export default function JobPosting() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="p-4 bg-primary/10 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <Lightbulb className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium text-primary">Optimization Tip</span>
-                    </div>
-                    <p className="text-sm text-primary/80">
-                      Consider mentioning structured workflow processes to attract candidates who thrive with clear expectations.
-                    </p>
-                  </div>
-                  <div className="p-4 bg-success/10 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <CheckCircle className="w-4 h-4 text-success" />
-                      <span className="text-sm font-medium text-success">Good Match</span>
-                    </div>
-                    <p className="text-sm text-success/80">
-                      Data analysis roles align well with pattern recognition strengths.
-                    </p>
-                  </div>
+                  {normalizedJob ? (
+                    <>
+                      <div className="p-4 bg-success/10 rounded-lg">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <CheckCircle className="w-4 h-4 text-success" />
+                          <span className="text-sm font-medium text-success">Analysis Complete</span>
+                        </div>
+                        <p className="text-sm text-success/80 mb-3">
+                          {normalizedJob.plain_language_summary}
+                        </p>
+                        <div className="text-xs space-y-1">
+                          <div><strong>CDC Scores:</strong></div>
+                          {Object.entries(normalizedJob.cdc_scores || {}).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span>{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:</span>
+                              <span>{String(value)}/10</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {normalizedJob.accommodation_rules && normalizedJob.accommodation_rules.length > 0 && (
+                        <div className="p-4 bg-primary/10 rounded-lg">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Lightbulb className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium text-primary">Accommodation Suggestions</span>
+                          </div>
+                          <ul className="text-sm text-primary/80 space-y-1">
+                            {normalizedJob.accommodation_rules.slice(0, 3).map((rule: any, index: number) => (
+                              <li key={index} className="text-xs">
+                                • {typeof rule === 'string' ? rule : (rule.then ? rule.then.join(', ') : JSON.stringify(rule))}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="p-4 bg-primary/10 rounded-lg">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <Lightbulb className="w-4 h-4 text-primary" />
+                          <span className="text-sm font-medium text-primary">AI Analysis</span>
+                        </div>
+                        <p className="text-sm text-primary/80">
+                          Click "Analyze Full Description" to get AI-powered insights about cognitive demands and ND accommodation suggestions.
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <Button className="w-full mt-4" variant="outline" data-testid="button-analyze-full">
+                <Button 
+                  className="w-full mt-4" 
+                  variant="outline" 
+                  onClick={handleAnalyzeJob}
+                  disabled={isAnalyzing || analyzeJobMutation.isPending}
+                  data-testid="button-analyze-full"
+                >
                   <Zap className="w-4 h-4 mr-2" />
-                  Analyze Full Description
+                  {isAnalyzing || analyzeJobMutation.isPending ? "Analyzing..." : "Analyze Full Description"}
                 </Button>
               </CardContent>
             </Card>

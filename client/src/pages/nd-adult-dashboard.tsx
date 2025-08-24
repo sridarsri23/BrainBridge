@@ -1,20 +1,20 @@
-import React, { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
-import { isUnauthorizedError } from "@/lib/authUtils";
+
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import StatsCard from "@/components/dashboard/stats-card";
 import JobMatchCard from "@/components/jobs/job-match-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+
 import { Briefcase, Send, GraduationCap, Users, MessageSquare, Brain, Target } from "lucide-react";
 import { Link } from "wouter";
 
 export default function NDAdultDashboard() {
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading, token } = useAuth();
   const { showError } = useToast();
 
   useEffect(() => {
@@ -27,14 +27,74 @@ export default function NDAdultDashboard() {
     }
   }, [isAuthenticated, isLoading, showError]);
 
+  const queryClient = useQueryClient();
+
+  // Completed assessments for the ND user
+  const { data: myAssessments = [], isLoading: assessmentsLoading } = useQuery({
+    queryKey: ["/api/assessment/assessments/my-responses"],
+    enabled: isAuthenticated && !!token,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch("/api/assessment/assessments/my-responses", {
+        headers,
+      });
+      if (!res.ok) throw new Error(`Failed to fetch assessments: ${res.status}`);
+      return res.json();
+    },
+  });
+
+  const assessmentsCompleted = Array.isArray(myAssessments) ? myAssessments.length : 0;
+  const hasCompletedAssessment = assessmentsCompleted > 0;
+
+  // When assessments count flips from 0 to >0, refresh matches immediately
+  useEffect(() => {
+    if (hasCompletedAssessment) {
+      queryClient.invalidateQueries({ queryKey: ["/api/jobs/matches/my"] });
+    }
+  }, [hasCompletedAssessment, queryClient]);
+
+  // Also refresh matches whenever the exact count changes (e.g., from 1 -> 2)
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      queryClient.invalidateQueries({ queryKey: ["/api/jobs/matches/my"] });
+    }
+  }, [assessmentsCompleted, isAuthenticated, token, queryClient]);
+
   const { data: jobMatches = [], isLoading: matchesLoading } = useQuery({
-    queryKey: ["/api/matches"],
-    enabled: isAuthenticated,
+    queryKey: ["/api/jobs/matches/my"],
+    enabled: isAuthenticated && !!token && hasCompletedAssessment,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch("/api/jobs/matches/my", { headers });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch matches: ${res.status}`);
+      }
+      return res.json();
+    },
   });
 
   const { data: profile } = useQuery({
-    queryKey: ["/api/profile"],
-    enabled: isAuthenticated,
+    queryKey: ["/api/profile/"],
+    enabled: isAuthenticated && !!token,
+    queryFn: async () => {
+      const res = await fetch("/api/profile/", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to fetch profile: ${res.status}`);
+      }
+      return res.json();
+    },
   });
 
   const greeting = () => {
@@ -76,9 +136,11 @@ export default function NDAdultDashboard() {
     return null;
   }
 
+  const displayName = (user as any)?.first_name ?? (user as any)?.firstName ?? 'there';
+
   return (
     <DashboardLayout 
-      title={`${greeting()}, ${user?.firstName || 'there'}!`}
+      title={`${greeting()}, ${displayName}!`}
       subtitle="Here's your personalized job matching dashboard"
       actions={
         <div className="bg-card px-4 py-2 rounded-lg border">
@@ -94,7 +156,7 @@ export default function NDAdultDashboard() {
       <div className="grid-responsive-4 mb-8">
             <StatsCard 
               title="New Matches" 
-              value="12" 
+              value={`${Array.isArray(jobMatches) ? jobMatches.length : 0}`} 
               icon={Briefcase}
               color="primary"
               data-testid="stats-card-matches"
@@ -107,8 +169,8 @@ export default function NDAdultDashboard() {
               data-testid="stats-card-applications"
             />
             <StatsCard 
-              title="Skills Completed" 
-              value="15" 
+              title="Assessments Completed" 
+              value={`${assessmentsCompleted}`} 
               icon={GraduationCap}
               color="success"
               data-testid="stats-card-skills"
@@ -131,7 +193,7 @@ export default function NDAdultDashboard() {
               </div>
 
               <div className="space-y-4">
-                {matchesLoading ? (
+                {matchesLoading || assessmentsLoading ? (
                   <div className="space-y-4">
                     {[1, 2].map((i) => (
                       <div key={i} className="bg-card p-6 rounded-xl border animate-pulse">
@@ -145,6 +207,19 @@ export default function NDAdultDashboard() {
                       </div>
                     ))}
                   </div>
+                ) : !hasCompletedAssessment ? (
+                  <Card>
+                    <CardContent className="pt-6">
+                      <div className="text-center py-8">
+                        <Briefcase className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium text-foreground mb-2">Complete an assessment to see matches</h3>
+                        <p className="text-muted-foreground mb-4">Take the self-discovery assessment to unlock personalized job matches.</p>
+                        <Link href="/self-discovery">
+                          <Button data-testid="button-start-assessment-empty">Start Assessment</Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ) : Array.isArray(jobMatches) && jobMatches.length > 0 ? (
                   jobMatches.slice(0, 3).map((match: any) => (
                     <JobMatchCard key={match.matchId} match={match} />
@@ -155,8 +230,10 @@ export default function NDAdultDashboard() {
                       <div className="text-center py-8">
                         <Briefcase className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                         <h3 className="text-lg font-medium text-foreground mb-2">No job matches yet</h3>
-                        <p className="text-muted-foreground mb-4">Complete your profile to start receiving personalized job matches.</p>
-                        <Button data-testid="button-complete-profile-empty">Complete Profile</Button>
+                        <p className="text-muted-foreground mb-4">We couldn't find matches right now. Check back later or refine your preferences.</p>
+                        <Link href="/self-discovery">
+                          <Button data-testid="button-review-assessment-empty">Review Assessment</Button>
+                        </Link>
                       </div>
                     </CardContent>
                   </Card>

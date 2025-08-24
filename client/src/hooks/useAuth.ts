@@ -222,7 +222,8 @@ export function useAuth() {
       return await res.json();
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(["/api/auth/user"], data);
+      localStorage.setItem('access_token', data.access_token);
+      queryClient.setQueryData(["/api/auth/user"], data.user);
       toast({
         title: "Welcome to BrainBridge!",
         description: "Your account has been created successfully.",
