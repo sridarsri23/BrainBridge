@@ -22,10 +22,18 @@ from sqlalchemy.orm import Session
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    init_db()
+    try:
+        print("Starting BrainBridge API...")
+        # Initialize database synchronously to ensure tables exist
+        print("Initializing database...")
+        init_db()
+        print("Database initialized successfully")
+    except Exception as e:
+        print(f"Warning: Database initialization failed: {e}")
+        # Don't crash the app if DB init fails
     yield
     # Shutdown
-    pass
+    print("Shutting down BrainBridge API...")
 
 app = FastAPI(
     title="BrainBridge API", 
@@ -251,11 +259,17 @@ async def update_user_profile(profile_data: dict, current_user: User = Depends(g
         raise HTTPException(status_code=500, detail=error_msg)
 
 
-# Health check endpoint
+# Health check endpoint - simple and fast
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy", "service": "BrainBridge API"}
+    """Health check endpoint - simple and fast"""
+    print("Health check endpoint called")
+    # Return immediately without any database or complex operations
+    return {
+        "status": "healthy", 
+        "service": "BrainBridge API",
+        "message": "Server is running"
+    }
 
 # Root API endpoint (only for direct API access)
 @app.get("/api/")
@@ -271,10 +285,18 @@ async def root():
 static_files_dir = "dist/public" if os.path.exists("dist/public") else "client/dist"
 assets_dir = f"{static_files_dir}/assets" if os.path.exists(f"{static_files_dir}/assets") else f"{static_files_dir}/assets"
 
+print(f"Looking for static files in: {static_files_dir}")
+print(f"Static files directory exists: {os.path.exists(static_files_dir)}")
+
 if os.path.exists(static_files_dir):
+    print(f"✓ Found static files directory: {static_files_dir}")
+    
     # Mount static assets
     if os.path.exists(assets_dir):
+        print(f"✓ Mounting assets from: {assets_dir}")
         app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+    else:
+        print(f"⚠ Assets directory not found: {assets_dir}")
     
     # Serve the React SPA for all non-API routes
     @app.get("/{full_path:path}")
@@ -287,14 +309,27 @@ if os.path.exists(static_files_dir):
         if os.path.exists(index_file):
             return FileResponse(index_file)
         else:
-            raise HTTPException(status_code=404, detail="Frontend not built")
+            # Fallback to API response if frontend not built
+            return {"message": "BrainBridge API is running", "frontend": "not built"}
 else:
-    print("Warning: Frontend static files not found. Please run 'npm run build' first.")
+    print("⚠ Frontend static files not found. Serving API only.")
+    print(f"Expected locations: dist/public, client/dist")
+    print(f"Current directory contents: {os.listdir('.') if os.path.exists('.') else 'N/A'}")
+
+# Simple root endpoint for basic connectivity test
+@app.get("/")
+async def root_simple():
+    """Simple root endpoint for health checks"""
+    # Check if frontend is available
+    if os.path.exists(static_files_dir) and os.path.exists(f"{static_files_dir}/index.html"):
+        return FileResponse(f"{static_files_dir}/index.html")
+    else:
+        return {"message": "BrainBridge API is running", "frontend": "not built"}
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     uvicorn.run(
-        "api.main:app",
+        "server.main:app",
         host="0.0.0.0",
         port=port,
         reload=True if os.getenv("NODE_ENV") == "development" else False,
